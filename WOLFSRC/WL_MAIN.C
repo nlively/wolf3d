@@ -226,43 +226,6 @@ void WriteConfig(void)
 
 //===========================================================================
 
-
-/*
-========================
-=
-= Patch386
-=
-= Patch ldiv to use 32 bit instructions
-=
-========================
-*/
-
-char    *JHParmStrings[] = {"no386",nil};
-void Patch386 (void)
-{
-extern void far jabhack2(void);
-extern int far  CheckIs386(void);
-
-	int     i;
-
-	for (i = 1;i < _argc;i++)
-		if (US_CheckParm(_argv[i],JHParmStrings) == 0)
-		{
-			IsA386 = false;
-			return;
-		}
-
-	if (CheckIs386())
-	{
-		IsA386 = true;
-		jabhack2();
-	}
-	else
-		IsA386 = false;
-}
-
-//===========================================================================
-
 /*
 =====================
 =
@@ -1225,7 +1188,7 @@ void InitGame (void)
 //
 // load in and lock down some basic chunks
 //
-
+	// TODO: load graphics into modern structures and do away with the MM stuff
 	CA_CacheGrChunk(STARTFONT);
 	MM_SetLock (&grsegs[STARTFONT],true);
 
@@ -1490,7 +1453,6 @@ void    DemoLoop (void)
 //
 // title page
 //
-			MM_SortMem ();
 #ifndef DEMOTEST
 
 #ifdef SPEAR
@@ -1585,27 +1547,7 @@ char    *nosprtxt[] = {"nospr",nil};
 
 void main (void)
 {
-	int     i;
-
-
-#ifdef BETA
-	//
-	// THIS IS FOR BETA ONLY!
-	//
-	struct dosdate_t d;
-
-	_dos_getdate(&d);
-	if (d.year > YEAR ||
-		(d.month >= MONTH && d.day >= DAY))
-	{
-	 printf("Sorry, BETA-TESTING is over. Thanks for you help.\n");
-	 exit(1);
-	}
-#endif
-
 	CheckForEpisodes();
-
-	Patch386 ();
 
 	InitGame ();
 
