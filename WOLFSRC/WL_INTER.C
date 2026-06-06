@@ -1,6 +1,7 @@
 // WL_INTER.C
 
 #include "WL_DEF.H"
+#include "assets.h"
 #pragma hdrstop
 
 
@@ -36,11 +37,8 @@ void ClearSplitVWB (void)
 
 void EndScreen (int palette, int screen)
 {
-	CA_CacheScreen (screen);
 	VW_UpdateScreen ();
-	CA_CacheGrChunk (palette);
-	VL_FadeIn(0,255,grsegs[palette],30);
-	UNCACHEGRCHUNK (palette);
+	VL_FadeIn(0,255,AM_GetGraphicsAsset(palette),30);
 	IN_ClearKeysDown ();
 	IN_Ack ();
 	VW_FadeOut ();
@@ -51,11 +49,8 @@ void EndSpear(void)
 {
 	EndScreen (END1PALETTE, ENDSCREEN11PIC);
 
-	CA_CacheScreen (ENDSCREEN3PIC);
 	VW_UpdateScreen ();
-	CA_CacheGrChunk (END3PALETTE);
-	VL_FadeIn(0,255,grsegs[END3PALETTE],30);
-	UNCACHEGRCHUNK (END3PALETTE);
+	VL_FadeIn(0,255,AM_GetGraphicsAsset(END3PALETTE),30);
 	fontnumber = 0;
 	fontcolor = 0xd0;
 	WindowX = 0;
@@ -121,11 +116,6 @@ void Victory (void)
 #ifdef SPEAR
 	StartCPMusic (XTHEEND_MUS);
 
-	CA_CacheGrChunk(BJCOLLAPSE1PIC);
-	CA_CacheGrChunk(BJCOLLAPSE2PIC);
-	CA_CacheGrChunk(BJCOLLAPSE3PIC);
-	CA_CacheGrChunk(BJCOLLAPSE4PIC);
-
 	VWB_Bar(0,0,320,200,VIEWCOLOR);
 	VWB_DrawPic (124,44,BJCOLLAPSE1PIC);
 	VW_UpdateScreen ();
@@ -141,29 +131,20 @@ void Victory (void)
 	VW_UpdateScreen ();
 	VW_WaitVBL(3*70);
 
-	UNCACHEGRCHUNK(BJCOLLAPSE1PIC);
-	UNCACHEGRCHUNK(BJCOLLAPSE2PIC);
-	UNCACHEGRCHUNK(BJCOLLAPSE3PIC);
-	UNCACHEGRCHUNK(BJCOLLAPSE4PIC);
 	VL_FadeOut (0,255,0,17,17,5);
 #endif
 
 	StartCPMusic (URAHERO_MUS);
 	ClearSplitVWB ();
-	CacheLump(LEVELEND_LUMP_START,LEVELEND_LUMP_END);
-	CA_CacheGrChunk(STARTFONT);
 
 #ifndef SPEAR
-	CA_CacheGrChunk(C_TIMECODEPIC);
 #endif
 
 
 	VWB_Bar (0,0,320,200-STATUSLINES,127);
 #ifdef JAPAN
 #ifndef JAPDEMO
-	CA_CacheGrChunk(C_ENDRATIOSPIC);
 	VWB_DrawPic(0,0,C_ENDRATIOSPIC);
-	UNCACHEGRCHUNK(C_ENDRATIOSPIC);
 #endif
 #else
 	Write(18,2,STR_YOUWIN);
@@ -282,11 +263,6 @@ void Victory (void)
 	VW_FadeOut ();
 
 #ifndef SPEAR
-	UNCACHEGRCHUNK(C_TIMECODEPIC);
-#endif
-	UnCacheLump(LEVELEND_LUMP_START,LEVELEND_LUMP_END);
-
-#ifndef SPEAR
 	EndText();
 #else
 	EndSpear();
@@ -312,11 +288,8 @@ void PG13 (void)
 	VW_FadeOut();
 	VWB_Bar(0,0,320,200,0x82);			// background
 
-	CA_CacheGrChunk (PG13PIC);
 	VWB_DrawPic (216,110,PG13PIC);
 	VW_UpdateScreen ();
-
-	UNCACHEGRCHUNK (PG13PIC);
 
 	VW_FadeIn();
 	IN_UserInput(TickBase*7);
@@ -554,8 +527,6 @@ void LevelCompleted (void)
 	};
 
 
-
-	CacheLump(LEVELEND_LUMP_START,LEVELEND_LUMP_END);
 	ClearSplitVWB ();			// set up for double buffering in split screen
 	VWB_Bar (0,0,320,200-STATUSLINES,127);
 	StartCPMusic(ENDLEVEL_MUS);
@@ -567,9 +538,7 @@ void LevelCompleted (void)
 	IN_StartAck();
 
 #ifdef JAPAN
-	CA_CacheGrChunk(C_INTERMISSIONPIC);
 	VWB_DrawPic(0,0,C_INTERMISSIONPIC);
-	UNCACHEGRCHUNK(C_INTERMISSIONPIC);
 #endif
 	VWB_DrawPic(0,16,L_GUYPIC);
 
@@ -908,12 +877,10 @@ void LevelCompleted (void)
 	{
 		SD_PlaySound (BONUS1UPSND);
 
-		CA_CacheGrChunk (STARTFONT+1);
 		Message ("This concludes your demo\n"
 				 "of Spear of Destiny! Now,\n"
 				 "go to your local software\n"
 				 "store and buy it!");
-		UNCACHEGRCHUNK (STARTFONT+1);
 
 		IN_ClearKeysDown();
 		IN_Ack();
@@ -925,12 +892,10 @@ void LevelCompleted (void)
 	{
 		SD_PlaySound (BONUS1UPSND);
 
-		CA_CacheGrChunk (STARTFONT+1);
 		Message ("This concludes your demo\n"
 				 "of Wolfenstein 3-D! Now,\n"
 				 "go to your local software\n"
 				 "store and buy it!");
-		UNCACHEGRCHUNK (STARTFONT+1);
 
 		IN_ClearKeysDown();
 		IN_Ack();
@@ -950,8 +915,6 @@ void LevelCompleted (void)
 		DrawPlayBorder ();
 	}
 	bufferofs = temp;
-
-	UnCacheLump(LEVELEND_LUMP_START,LEVELEND_LUMP_END);
 }
 
 
@@ -1040,18 +1003,10 @@ void	DrawHighScores(void)
 	MM_SortMem ();
 
 #ifndef SPEAR
-//	CA_CacheGrChunk (C_CODEPIC);
-	CA_CacheGrChunk (HIGHSCORESPIC);
-	CA_CacheGrChunk (STARTFONT);
-	CA_CacheGrChunk (C_LEVELPIC);
-	CA_CacheGrChunk (C_SCOREPIC);
-	CA_CacheGrChunk (C_NAMEPIC);
-
 	ClearMScreen();
 	DrawStripes(10);
 
 	VWB_DrawPic(48,0,HIGHSCORESPIC);
-	UNCACHEGRCHUNK (HIGHSCORESPIC);
 
 	VWB_DrawPic(4*8,68,C_NAMEPIC);
 	VWB_DrawPic(20*8,68,C_LEVELPIC);
@@ -1062,13 +1017,9 @@ void	DrawHighScores(void)
 	fontnumber=0;
 
 #else
-	CacheLump (BACKDROP_LUMP_START,BACKDROP_LUMP_END);
 	ClearMScreen();
 	DrawStripes(10);
-	UnCacheLump (BACKDROP_LUMP_START,BACKDROP_LUMP_END);
 
-	CacheLump (HIGHSCORES_LUMP_START,HIGHSCORES_LUMP_END);
-	CA_CacheGrChunk (STARTFONT+1);
 	VWB_DrawPic (0,0,HIGHSCORESPIC);
 
 	fontnumber = 1;
@@ -1176,7 +1127,6 @@ void	DrawHighScores(void)
 	VW_UpdateScreen ();
 
 #ifdef SPEAR
-	UnCacheLump (HIGHSCORES_LUMP_START,HIGHSCORES_LUMP_END);
 	fontnumber = 0;
 #endif
 }
@@ -1276,7 +1226,6 @@ void NonShareware(void)
 	ClearMScreen();
 	DrawStripes(10);
 
-	CA_CacheGrChunk(STARTFONT+1);
 	fontnumber = 1;
 
 	SETFONTCOLOR(READHCOLOR,BKGDCOLOR);
@@ -1510,10 +1459,6 @@ void CopyProtection(void)
 
 	try = 0;
 	VW_FadeOut();
-	CA_CacheGrChunk(C_BACKDROPPIC);
-	CacheLump(COPYPROT_LUMP_START,COPYPROT_LUMP_END);
-	CA_CacheGrChunk(STARTFONT+1);
-	CA_LoadAllSounds();
 	StartCPMusic(COPYPRO_MUS);
 	US_InitRndT(true);
 
@@ -1684,9 +1629,6 @@ void CopyProtection(void)
 
 			SD_PlaySound(BONUS1UPSND);
 			SD_WaitSoundDone();
-			UNCACHEGRCHUNK (STARTFONT+1);
-			UNCACHEGRCHUNK (C_BACKDROPPIC);
-			UnCacheLump (COPYPROT_LUMP_START,COPYPROT_LUMP_END);
 
 			switch(SoundMode)
 			{

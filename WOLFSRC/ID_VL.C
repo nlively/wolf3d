@@ -597,15 +597,10 @@ byte	rightmasks[4] = {1,3,7,15};
 =
 =================
 */
-
+/// ✅
 void VL_Plot (int x, int y, int color)
 {
-	byte mask;
-
-	mask = pixmasks[x&3];
-	VGAMAPMASK(mask);
-	*(byte far *)MK_FP(SCREENSEG,bufferofs+(ylookup[y]+(x>>2))) = color;
-	VGAMAPMASK(15);
+	vid.framebuffer[vid.bufferofs + ylookup[y] + x] = color;
 }
 
 

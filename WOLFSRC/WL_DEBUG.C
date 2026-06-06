@@ -161,7 +161,6 @@ void PicturePause (void)
 //
 
 	ClearMemory ();
-	CA_SetAllPurge();
 	MM_GetPtr (&buffer,64000);
 	for (p=0;p<4;p++)
 	{

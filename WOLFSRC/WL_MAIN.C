@@ -1,6 +1,11 @@
 // WL_MAIN.C
 
+#include <stdio.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <conio.h>
+#include "render.h"
+#include "assets.h"
 #include "WL_DEF.H"
 #pragma hdrstop
 
@@ -326,6 +331,7 @@ boolean SaveTheGame(int file,int x,int y)
 
 
 	DiskFlopAnim(x,y);
+
 	CA_FarWrite (file,(void far *)&gamestate,sizeof(gamestate));
 	checksum = DoChecksum((byte far *)&gamestate,sizeof(gamestate),checksum);
 
@@ -521,11 +527,8 @@ void ShutdownId (void)
 {
 	US_Shutdown ();
 	SD_Shutdown ();
-	PM_Shutdown ();
 	IN_Shutdown ();
 	VW_Shutdown ();
-	CA_Shutdown ();
-	MM_Shutdown ();
 }
 
 
@@ -1035,15 +1038,6 @@ void DoJukebox(void)
 	start = 0;
 #endif
 
-
-	CA_CacheGrChunk (STARTFONT+1);
-#ifdef SPEAR
-	CacheLump (BACKDROP_LUMP_START,BACKDROP_LUMP_END);
-#else
-	CacheLump (CONTROLS_LUMP_START,CONTROLS_LUMP_END);
-#endif
-	CA_LoadAllSounds ();
-
 	fontnumber=1;
 	ClearMScreen ();
 	VWB_DrawPic(112,184,C_MOUSELBACKPIC);
@@ -1086,11 +1080,6 @@ void DoJukebox(void)
 
 	MenuFadeOut();
 	IN_ClearKeysDown();
-#ifdef SPEAR
-	UnCacheLump (BACKDROP_LUMP_START,BACKDROP_LUMP_END);
-#else
-	UnCacheLump (CONTROLS_LUMP_START,CONTROLS_LUMP_END);
-#endif
 }
 #endif
 
@@ -1115,34 +1104,16 @@ void InitGame (void)
 	else
 		virtualreality = false;
 
-	MM_Startup ();                  // so the signon screen can be freed
-
 	SignonScreen ();
+
+	// initialize asset manager + load and cache
+	// media assets for game
+	AM_SetupAssets();
 
 	VW_Startup ();
 	IN_Startup ();
-	PM_Startup ();
-	PM_UnlockMainMem ();
 	SD_Startup ();
-	CA_Startup ();
 	US_Startup ();
-
-
-#ifndef SPEAR
-	if (mminfo.mainmem < 235000L)
-#else
-	if (mminfo.mainmem < 257000L && !MS_CheckParm("debugmode"))
-#endif
-	{
-		memptr screen;
-
-		CA_CacheGrChunk (ERRORSCREEN);
-		screen = grsegs[ERRORSCREEN];
-		ShutdownId();
-		movedata ((unsigned)screen,7+7*160,0xb800,0,17*160);
-		gotoxy (1,23);
-		exit(1);
-	}
 
 
 //
@@ -1189,8 +1160,7 @@ void InitGame (void)
 // load in and lock down some basic chunks
 //
 	// TODO: load graphics into modern structures and do away with the MM stuff
-	CA_CacheGrChunk(STARTFONT);
-	MM_SetLock (&grsegs[STARTFONT],true);
+	MM_SetLock (&AM_GetGraphicsAsset(STARTFONT),true);
 
 	LoadLatchMem ();
 	BuildTables ();          // trig tables
@@ -1226,6 +1196,11 @@ close(profilehandle);
 		NoWait = true;
 		geninterrupt(0x60);
 	}
+
+	// init renderer
+	// TODO: make sure this is in the right spot
+	R_SetPalette(gamepal);
+
 }
 
 //===========================================================================
@@ -1287,11 +1262,8 @@ void ShowViewSize (int width)
 
 void NewViewSize (int width)
 {
-	CA_UpLevel ();
-	MM_SortMem ();
 	viewsize = width;
 	SetViewSize (width*16,width*16*HEIGHTRATIO);
-	CA_DownLevel ();
 }
 
 
@@ -1306,53 +1278,13 @@ void NewViewSize (int width)
 ==========================
 */
 
+/// ✅
 void Quit (char *error)
 {
-	unsigned        finscreen;
-	memptr	screen;
-
-	if (virtualreality)
-		geninterrupt(0x61);
-
-	ClearMemory ();
-	if (!*error)
-	{
-	 #ifndef JAPAN
-	 CA_CacheGrChunk (ORDERSCREEN);
-	 screen = grsegs[ORDERSCREEN];
-	 #endif
-	 WriteConfig ();
-	}
-	else
-	{
-	 CA_CacheGrChunk (ERRORSCREEN);
-	 screen = grsegs[ERRORSCREEN];
-	}
-
 	ShutdownId ();
 
-	if (error && *error)
-	{
-	  movedata ((unsigned)screen,7,0xb800,0,7*160);
-	  gotoxy (10,4);
-	  puts(error);
-	  gotoxy (1,8);
-	  exit(1);
-	}
-	else
-	if (!error || !(*error))
-	{
-		clrscr();
-		#ifndef JAPAN
-		movedata ((unsigned)screen,7,0xb800,0,4000);
-		gotoxy(1,24);
-		#endif
-//asm	mov	bh,0
-//asm	mov	dh,23	// row
-//asm	mov	dl,0	// collumn
-//asm	mov ah,2
-//asm	int	0x10
-	}
+	AM_FreeAssets();
+	R_Shutdown();
 
 	exit(0);
 }
@@ -1456,21 +1388,12 @@ void    DemoLoop (void)
 #ifndef DEMOTEST
 
 #ifdef SPEAR
-			CA_CacheGrChunk (TITLEPALETTE);
-
-			CA_CacheGrChunk (TITLE1PIC);
 			VWB_DrawPic (0,0,TITLE1PIC);
-			UNCACHEGRCHUNK (TITLE1PIC);
 
-			CA_CacheGrChunk (TITLE2PIC);
 			VWB_DrawPic (0,80,TITLE2PIC);
-			UNCACHEGRCHUNK (TITLE2PIC);
 			VW_UpdateScreen ();
-			VL_FadeIn(0,255,grsegs[TITLEPALETTE],30);
-
-			UNCACHEGRCHUNK (TITLEPALETTE);
+			VL_FadeIn(0,255,AM_GetGraphicsAsset(TITLEPALETTE),30);
 #else
-			CA_CacheScreen (TITLEPIC);
 			VW_UpdateScreen ();
 			VW_FadeIn();
 #endif
@@ -1480,7 +1403,6 @@ void    DemoLoop (void)
 //
 // credits page
 //
-			CA_CacheScreen (CREDITSPIC);
 			VW_UpdateScreen();
 			VW_FadeIn ();
 			if (IN_UserInput(TickBase*10))
@@ -1549,6 +1471,12 @@ void main (void)
 {
 	CheckForEpisodes();
 
+	if (R_Startup("Wolfenstein 3D", 3) != 0) {
+		fprintf(stderr, "Error initializing renderer: %s\n", R_GetError()));
+		return 1;
+	}
+
+	// do this in game init
 	InitGame ();
 
 	DemoLoop();

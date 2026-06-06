@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "asset_hashmap.h"
+#include "assets.h"
 
 typedef struct {
     char* item;
@@ -71,7 +72,7 @@ void LoadFonts(AssetHashMap* cache) {
 /***
  * Load each asset into memory
  */
-void LoadAssets() {
+void AM_SetupAssets() {
     if (asset_cache != NULL) {
         // TODO: raise error, asset cache already initialized
     }
@@ -81,7 +82,7 @@ void LoadAssets() {
     // TODO: adjust numbers below to match actual asset counts per type
 
     // Load fonts
-    asset_cache->fonts = new_asset_hashmap(100);
+    asset_cache->fonts = new_asset_hashmap(2);
     LoadFonts(asset_cache->fonts);
 
     // Load sounds
@@ -94,7 +95,7 @@ void LoadAssets() {
     asset_cache->sprites = new_asset_hashmap(100);
 }
 
-void FreeAssets() {
+void AM_FreeAssets() {
     if (asset_cache == NULL) {
         // TODO: raise error, nothing to free
     }
@@ -107,4 +108,8 @@ void FreeAssets() {
 
     // Free the cache itself
     free(asset_cache);
+}
+
+void* AM_GetGraphicsAsset(int asset_id) {
+    // TODO: implement this
 }

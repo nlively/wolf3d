@@ -1,6 +1,7 @@
 // ID_VH.C
 
 #include "ID_HEADS.H"
+#include "assets.h"
 
 #define	SCREENWIDTH		80
 #define CHARWIDTH		2
@@ -15,8 +16,6 @@
 #define VIEWWIDTH		80
 
 #define PIXTOBLOCK		4		// 16 pixels to an update block
-
-#define UNCACHEGRCHUNK(chunk)	{MM_FreePtr(&grsegs[chunk]);grneeded[chunk]&=~ca_levelbit;}
 
 byte	update[UPDATEHIGH][UPDATEWIDE];
 
@@ -44,7 +43,7 @@ void VW_DrawPropString (char far *string)
 	byte	far *source, far *dest, far *origdest;
 	byte	ch,mask;
 
-	font = (fontstruct far *)grsegs[STARTFONT+fontnumber];
+	font = (fontstruct far *)AM_GetGraphicsAsset(STARTFONT+fontnumber);
 	height = bufferheight = font->height;
 	dest = origdest = MK_FP(SCREENSEG,bufferofs+ylookup[py]+(px>>2));
 	mask = 1<<(px&3);
@@ -100,7 +99,7 @@ void VW_DrawColorPropString (char far *string)
 	byte	far *source, far *dest, far *origdest;
 	byte	ch,mask;
 
-	font = (fontstruct far *)grsegs[STARTFONT+fontnumber];
+	font = (fontstruct far *)AM_GetGraphicsAsset(STARTFONT+fontnumber);
 	height = bufferheight = font->height;
 	dest = origdest = MK_FP(SCREENSEG,bufferofs+ylookup[py]+(px>>2));
 	mask = 1<<(px&3);
@@ -213,12 +212,12 @@ void VWL_MeasureString (char far *string, word *width, word *height
 
 void	VW_MeasurePropString (char far *string, word *width, word *height)
 {
-	VWL_MeasureString(string,width,height,(fontstruct _seg *)grsegs[STARTFONT+fontnumber]);
+	VWL_MeasureString(string,width,height,(fontstruct _seg *)AM_GetGraphicsAsset(STARTFONT+fontnumber));
 }
 
 void	VW_MeasureMPropString  (char far *string, word *width, word *height)
 {
-	VWL_MeasureString(string,width,height,(fontstruct _seg *)grsegs[STARTFONTM+fontnumber]);
+	VWL_MeasureString(string,width,height,(fontstruct _seg *)AM_GetGraphicsAsset(STARTFONTM+fontnumber));
 }
 
 
@@ -297,7 +296,7 @@ void VWB_DrawTile8 (int x, int y, int tile)
 void VWB_DrawTile8M (int x, int y, int tile)
 {
 	if (VW_MarkUpdateBlock (x,y,x+7,y+7))
-		VL_MemToScreen (((byte far *)grsegs[STARTTILE8M])+tile*64,8,8,x,y);
+		VL_MemToScreen (((byte far *)AM_GetGraphicsAsset(STARTTILE8M))+tile*64,8,8,x,y);
 }
 
 
@@ -308,11 +307,13 @@ void VWB_DrawPic (int x, int y, int chunknum)
 
 	x &= ~7;
 
+	// TODO: instead of getting our dimensions from `pictable`, look them up via new asset manager
 	width = pictable[picnum].width;
 	height = pictable[picnum].height;
 
+	// TODO: instead of blitting from grsegs, access image from asset manager
 	if (VW_MarkUpdateBlock (x,y,x+width-1,y+height-1))
-		VL_MemToScreen (grsegs[chunknum],width,height,x,y);
+		VL_MemToScreen (AM_GetGraphicsAsset(chunknum),width,height,x,y);
 }
 
 
@@ -404,8 +405,7 @@ void LoadLatchMem (void)
 // tile 8s
 //
 	latchpics[0] = freelatch;
-	CA_CacheGrChunk (STARTTILE8);
-	src = (byte _seg *)grsegs[STARTTILE8];
+	src = (byte _seg *)AM_GetGraphicsAsset(STARTTILE8);
 	destoff = freelatch;
 
 	for (i=0;i<NUMTILE8;i++)
@@ -414,23 +414,20 @@ void LoadLatchMem (void)
 		src += 64;
 		destoff +=16;
 	}
-	UNCACHEGRCHUNK (STARTTILE8);
 
 #if 0	// ran out of latch space!
 //
 // tile 16s
 //
-	src = (byte _seg *)grsegs[STARTTILE16];
+	src = (byte _seg *)AM_GetGraphicsAsset(STARTTILE16);
 	latchpics[1] = destoff;
 
 	for (i=0;i<NUMTILE16;i++)
 	{
-		CA_CacheGrChunk (STARTTILE16+i);
-		src = (byte _seg *)grsegs[STARTTILE16+i];
+		src = (byte _seg *)AM_GetGraphicsAsset(STARTTILE16+i);
 		VL_MemToLatch (src,16,16,destoff);
 		destoff+=64;
 		if (src)
-			UNCACHEGRCHUNK (STARTTILE16+i);
 	}
 #endif
 
@@ -443,12 +440,10 @@ void LoadLatchMem (void)
 	for (i=start;i<=end;i++)
 	{
 		latchpics[2+i-start] = destoff;
-		CA_CacheGrChunk (i);
 		width = pictable[i-STARTPICS].width;
 		height = pictable[i-STARTPICS].height;
-		VL_MemToLatch (grsegs[i],width,height,destoff);
+		VL_MemToLatch (AM_GetGraphicsAsset(i),width,height,destoff);
 		destoff += width/4 *height;
-		UNCACHEGRCHUNK(i);
 	}
 
 	EGAMAPMASK(15);

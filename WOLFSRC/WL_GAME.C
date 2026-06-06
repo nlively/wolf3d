@@ -1,6 +1,7 @@
 // WL_GAME.C
 
 #include "WL_DEF.H"
+#include "assets.h"
 #pragma hdrstop
 
 #ifdef MYPROFILE
@@ -647,7 +648,6 @@ void SetupGameLevel (void)
 //
 // load the level
 //
-	CA_CacheMap (gamestate.mapon+10*gamestate.episode);
 	mapon-=gamestate.episode*10;
 
 	mapwidth = mapheaderseg[mapon]->width;
@@ -749,15 +749,6 @@ void SetupGameLevel (void)
 				*(map-1) = tile;
 			}
 		}
-
-
-
-//
-// have the caching manager load and purge stuff to make sure all marks
-// are in memory
-//
-	CA_LoadAllSounds ();
-
 }
 
 
@@ -874,8 +865,6 @@ void DrawPlayScreen (void)
 
 	temp = bufferofs;
 
-	CA_CacheGrChunk (STATUSBARPIC);
-
 	for (i=0;i<3;i++)
 	{
 		bufferofs = screenloc[i];
@@ -884,8 +873,6 @@ void DrawPlayScreen (void)
 	}
 
 	bufferofs = temp;
-
-	UNCACHEGRCHUNK (STATUSBARPIC);
 
 	DrawFace ();
 	DrawHealth ();
@@ -982,7 +969,6 @@ void RecordDemo (void)
 
 	CenterWindow(26,3);
 	PrintY+=6;
-	CA_CacheGrChunk(STARTFONT);
 	fontnumber=0;
 	US_Print("  Demo which level(1-10):");
 	VW_UpdateScreen();
@@ -1053,9 +1039,8 @@ void PlayDemo (int demonumber)
 	int dems[1]={T_DEMO0};
 #endif
 
-	CA_CacheGrChunk(dems[demonumber]);
-	demoptr = grsegs[dems[demonumber]];
-	MM_SetLock (&grsegs[dems[demonumber]],true);
+	demoptr = AM_GetGraphicsAsset(dems[demonumber]);
+	MM_SetLock (&AM_GetGraphicsAsset(dems[demonumber]),true);
 #else
 	demoname[4] = '0'+demonumber;
 	CA_LoadFile (demoname,&demobuffer);
@@ -1086,9 +1071,7 @@ void PlayDemo (int demonumber)
 
 	PlayLoop ();
 
-#ifdef DEMOSEXTERN
-	UNCACHEGRCHUNK(dems[demonumber]);
-#else
+#ifndef DEMOSEXTERN
 	MM_FreePtr (&demobuffer);
 #endif
 
@@ -1477,6 +1460,9 @@ startplayloop:
 			ClearMemory ();
 			break;
 		}
+
+		// renderer's present() call, once per frame
+		R_Present(); 
 
 	} while (1);
 

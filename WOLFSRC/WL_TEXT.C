@@ -1,6 +1,7 @@
 // WL_TEXT.C
 
 #include "WL_DEF.H"
+#include "assets.h"
 #pragma	hdrstop
 
 /*
@@ -558,23 +559,16 @@ void CacheLayoutGraphics (void)
 				numpages++;
 			if (ch == 'E')		// end of file, so load graphics and return
 			{
-				CA_MarkGrChunk(H_TOPWINDOWPIC);
-				CA_MarkGrChunk(H_LEFTWINDOWPIC);
-				CA_MarkGrChunk(H_RIGHTWINDOWPIC);
-				CA_MarkGrChunk(H_BOTTOMINFOPIC);
-				CA_CacheMarks ();
 				text = textstart;
 				return;
 			}
 			if (ch == 'G')		// draw graphic command, so mark graphics
 			{
 				ParsePicCommand ();
-				CA_MarkGrChunk (picnum);
 			}
 			if (ch == 'T')		// timed draw graphic command, so mark graphics
 			{
 				ParseTimedCommand ();
-				CA_MarkGrChunk (picnum);
 			}
 		}
 		else
@@ -646,7 +640,6 @@ void ShowArticle (char far *article)
 	text = article;
 	oldfontnumber = fontnumber;
 	fontnumber = 0;
-	CA_MarkGrChunk(STARTFONT);
 	VWB_Bar (0,0,320,200,BACKCOLOR);
 	CacheLayoutGraphics ();
 	#endif
@@ -660,10 +653,6 @@ void ShowArticle (char far *article)
 		{
 			newpage = false;
 			#ifdef JAPAN
-			if (!which)
-				CA_CacheScreen(snames[pagenum - 1]);
-			else
-				CA_CacheScreen(enames[which*2 + pagenum - 1]);
 			#else
 			PageLayout (true);
 			#endif
@@ -751,13 +740,11 @@ void HelpScreens (void)
 	memptr		layout;
 
 
-	CA_UpLevel ();
 	MM_SortMem ();
 #ifdef JAPAN
 	ShowArticle (0);
 	VW_FadeOut();
 	FreeMusic ();
-	CA_DownLevel ();
 	MM_SortMem ();
 #else
 
@@ -766,9 +753,8 @@ void HelpScreens (void)
 
 #ifdef ARTSEXTERN
 	artnum = helpextern;
-	CA_CacheGrChunk (artnum);
-	text = (char _seg *)grsegs[artnum];
-	MM_SetLock (&grsegs[artnum], true);
+	text = (char _seg *)AM_GetGraphicsAsset(artnum);
+	MM_SetLock (&AM_GetGraphicsAsset(artnum), true);
 #else
 	CA_LoadFile (helpfilename,&layout);
 	text = (char _seg *)layout;
@@ -778,7 +764,7 @@ void HelpScreens (void)
 	ShowArticle (text);
 
 #ifdef ARTSEXTERN
-	MM_FreePtr (&grsegs[artnum]);
+	MM_FreePtr (&AM_GetGraphicsAsset(artnum));
 #else
 	MM_FreePtr (&layout);
 #endif
@@ -788,7 +774,6 @@ void HelpScreens (void)
 	VW_FadeOut();
 
 	FreeMusic ();
-	CA_DownLevel ();
 	MM_SortMem ();
 #endif
 }
@@ -806,7 +791,6 @@ void EndText (void)
 
 	ClearMemory ();
 
-	CA_UpLevel ();
 	MM_SortMem ();
 #ifdef JAPAN
 	ShowArticle(gamestate.episode + 1);
@@ -819,7 +803,6 @@ void EndText (void)
 		Mouse(MDelta);	// Clear accumulated mouse movement
 
 	FreeMusic ();
-	CA_DownLevel ();
 	MM_SortMem ();
 #else
 
@@ -827,9 +810,8 @@ void EndText (void)
 
 #ifdef ARTSEXTERN
 	artnum = endextern+gamestate.episode;
-	CA_CacheGrChunk (artnum);
-	text = (char _seg *)grsegs[artnum];
-	MM_SetLock (&grsegs[artnum], true);
+	text = (char _seg *)AM_GetGraphicsAsset(artnum);
+	MM_SetLock (&AM_GetGraphicsAsset(artnum), true);
 #else
 	endfilename[6] = '1'+gamestate.episode;
 	CA_LoadFile (endfilename,&layout);
@@ -840,7 +822,7 @@ void EndText (void)
 	ShowArticle (text);
 
 #ifdef ARTSEXTERN
-	MM_FreePtr (&grsegs[artnum]);
+	MM_FreePtr (&AM_GetGraphicsAsset(artnum));
 #else
 	MM_FreePtr (&layout);
 #endif
@@ -853,7 +835,6 @@ void EndText (void)
 		Mouse(MDelta);	// Clear accumulated mouse movement
 
 	FreeMusic ();
-	CA_DownLevel ();
 	MM_SortMem ();
 #endif
 }

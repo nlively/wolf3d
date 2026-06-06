@@ -207,7 +207,7 @@ int songs[]=
  XFUNKIE_MUS,
  XDEATH_MUS,
  XGETYOU_MUS,		// DON'T KNOW
- ULTIMATE_MUS,	// Trans Gr”sse
+ ULTIMATE_MUS,	// Trans Grï¿½sse
 
  DUNGEON_MUS,
  GOINGAFT_MUS,
@@ -674,7 +674,6 @@ void CheckKeys (void)
 		DrawScore();
 
 		ClearMemory ();
-		CA_CacheGrChunk (STARTFONT+1);
 		ClearSplitVWB ();
 		VW_ScreenToScreen (displayofs,bufferofs,80,160);
 
@@ -684,7 +683,6 @@ void CheckKeys (void)
 				STR_CHEATER4"\n"
 				STR_CHEATER5);
 
-		UNCACHEGRCHUNK(STARTFONT+1);
 		PM_CheckMainMem ();
 		IN_ClearKeysDown();
 		IN_Ack();
@@ -708,12 +706,10 @@ void CheckKeys (void)
 #endif
 	{
 	 ClearMemory ();
-	 CA_CacheGrChunk (STARTFONT+1);
 	 ClearSplitVWB ();
 	 VW_ScreenToScreen (displayofs,bufferofs,80,160);
 
 	 Message("Debugging keys are\nnow available!");
-	 UNCACHEGRCHUNK(STARTFONT+1);
 	 PM_CheckMainMem ();
 	 IN_ClearKeysDown();
 	 IN_Ack();
@@ -730,7 +726,6 @@ void CheckKeys (void)
 		Keyboard[sc_T])
 	{
 	 ClearMemory ();
-	 CA_CacheGrChunk (STARTFONT+1);
 	 ClearSplitVWB ();
 	 VW_ScreenToScreen (displayofs,bufferofs,80,160);
 
@@ -739,7 +734,6 @@ void CheckKeys (void)
 			 "then, you already know\n"
 			 "that - right, Cheatmeister?!");
 
-	 UNCACHEGRCHUNK(STARTFONT+1);
 	 PM_CheckMainMem ();
 	 IN_ClearKeysDown();
 	 IN_Ack();
@@ -822,7 +816,6 @@ void CheckKeys (void)
 //
 	if (Keyboard[sc_Tab] && DebugOk)
 	{
-		CA_CacheGrChunk (STARTFONT);
 		fontnumber=0;
 		SETFONTCOLOR(0,15);
 		DebugKeys();
@@ -1031,7 +1024,6 @@ void StartMusic(void)
 //DEBUG control panel		return;
 
 	MM_BombOnError (false);
-	CA_CacheAudioChunk(STARTMUSIC + chunk);
 	MM_BombOnError (true);
 	if (mmerror)
 		mmerror = false;

@@ -83,9 +83,6 @@ typedef	struct
 #define	nil	((void *)0)
 
 
-#include "ID_MM.H"
-#include "ID_PM.H"
-#include "ID_CA.H"
 #include "ID_VL.H"
 #include "ID_VH.H"
 #include "ID_IN.H"
