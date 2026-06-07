@@ -999,9 +999,6 @@ void	DrawHighScores(void)
 				x,y;
 	HighScore	*s;
 
-
-	MM_SortMem ();
-
 #ifndef SPEAR
 	ClearMScreen();
 	DrawStripes(10);
@@ -1638,7 +1635,7 @@ void CopyProtection(void)
 			}
 
 			for (i=0;i<NUMSOUNDS;i++,start++)
-				MM_FreePtr ((memptr *)&audiosegs[start]);
+				free(audiosegs[start]); // TODO: is this right?
 			return;
 		}
 	}

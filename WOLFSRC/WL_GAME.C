@@ -203,9 +203,7 @@ void UpdateSoundLoc(void)
 
 void ClearMemory (void)
 {
-	PM_UnlockMainMem();
 	SD_StopDigitized();
-	MM_SortMem ();
 }
 
 
@@ -900,8 +898,7 @@ void DrawPlayScreen (void)
 
 void StartDemoRecord (int levelnumber)
 {
-	MM_GetPtr (&demobuffer,MAXDEMOSIZE);
-	MM_SetLock (&demobuffer,true);
+	demobuffer = malloc(MAXDEMOSIZE);
 	demoptr = (char far *)demobuffer;
 	lastdemoptr = demoptr+MAXDEMOSIZE;
 
@@ -947,8 +944,7 @@ void FinishDemoRecord (void)
 		}
 	}
 
-
-	MM_FreePtr (&demobuffer);
+	free(demobuffer);
 }
 
 //==========================================================================
@@ -1040,11 +1036,9 @@ void PlayDemo (int demonumber)
 #endif
 
 	demoptr = AM_GetGraphicsAsset(dems[demonumber]);
-	MM_SetLock (&AM_GetGraphicsAsset(dems[demonumber]),true);
 #else
 	demoname[4] = '0'+demonumber;
 	CA_LoadFile (demoname,&demobuffer);
-	MM_SetLock (&demobuffer,true);
 	demoptr = (char far *)demobuffer;
 #endif
 
@@ -1072,7 +1066,7 @@ void PlayDemo (int demonumber)
 	PlayLoop ();
 
 #ifndef DEMOSEXTERN
-	MM_FreePtr (&demobuffer);
+	free(demobuffer);
 #endif
 
 	demoplayback = false;

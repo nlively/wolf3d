@@ -1159,9 +1159,6 @@ void InitGame (void)
 //
 // load in and lock down some basic chunks
 //
-	// TODO: load graphics into modern structures and do away with the MM stuff
-	MM_SetLock (&AM_GetGraphicsAsset(STARTFONT),true);
-
 	LoadLatchMem ();
 	BuildTables ();          // trig tables
 	SetupWalls ();
@@ -1229,17 +1226,7 @@ boolean SetViewSize (unsigned width, unsigned height)
 //
 // build all needed compiled scalers
 //
-//	MM_BombOnError (false);
 	SetupScaling (viewwidth*1.5);
-#if 0
-	MM_BombOnError (true);
-	if (mmerror)
-	{
-		Quit ("Can't build scalers!");
-		mmerror = false;
-		return false;
-	}
-#endif
 	return true;
 }
 
@@ -1308,7 +1295,7 @@ void    DemoLoop (void)
 	static int LastDemo;
 	int     i,level;
 	long nsize;
-	memptr	nullblock;
+	void*	nullblock;
 
 //
 // check for launch from ted
@@ -1343,9 +1330,6 @@ void    DemoLoop (void)
 // main game cycle
 //
 
-
-//	nsize = (long)40*1024;
-//	MM_GetPtr(&nullblock,nsize);
 
 #ifndef DEMOTEST
 

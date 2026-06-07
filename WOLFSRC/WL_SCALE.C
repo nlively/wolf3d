@@ -29,7 +29,7 @@ boolean	insetupscaling;
 */
 
 t_compscale 	_seg *work;
-unsigned BuildCompScale (int height, memptr *finalspot);
+unsigned BuildCompScale (int height, void *finalspot);
 
 int			stepbytwo;
 
@@ -74,36 +74,34 @@ void SetupScaling (int maxscaleheight)
 //
 	for (i=1;i<MAXSCALEHEIGHT;i++)
 	{
-		if (scaledirectory[i])
-			MM_FreePtr (&(memptr)scaledirectory[i]);
+		if (scaledirectory[i]) {
+			free(scaledirectory[i]);
+			scaledirectory[i] = NULL;
+		}
 		if (i>=stepbytwo)
 			i += 2;
 	}
 	memset (scaledirectory,0,sizeof(scaledirectory));
 
-	MM_SortMem ();
-
 //
 // build the compiled scalers
 //
 	stepbytwo = viewheight/2;	// save space by double stepping
-	MM_GetPtr (&(memptr)work,20000);
+	work = malloc(20000);
 
 	for (i=1;i<=maxscaleheight;i++)
 	{
-		BuildCompScale (i*2,&(memptr)scaledirectory[i]);
+		BuildCompScale (i*2,&scaledirectory[i]);
 		if (i>=stepbytwo)
 			i+= 2;
 	}
-	MM_FreePtr (&(memptr)work);
+	free(work)
 
 //
 // compact memory and lock down scalers
 //
-	MM_SortMem ();
 	for (i=1;i<=maxscaleheight;i++)
 	{
-		MM_SetLock (&(memptr)scaledirectory[i],true);
 		fullscalefarcall[i] = (unsigned)scaledirectory[i];
 		fullscalefarcall[i] <<=16;
 		fullscalefarcall[i] += scaledirectory[i]->codeofs[0];
@@ -150,7 +148,7 @@ void SetupScaling (int maxscaleheight)
 ========================
 */
 
-unsigned BuildCompScale (int height, memptr *finalspot)
+unsigned BuildCompScale (int height, void *finalspot)
 {
 	byte		far *code;
 
@@ -221,7 +219,8 @@ unsigned BuildCompScale (int height, memptr *finalspot)
 	*code++ = 0xcb;
 
 	totalsize = FP_OFF(code);
-	MM_GetPtr (finalspot,totalsize);
+
+	finalspot = malloc(totalsize);
 	_fmemcpy ((byte _seg *)(*finalspot),(byte _seg *)work,totalsize);
 
 	return totalsize;

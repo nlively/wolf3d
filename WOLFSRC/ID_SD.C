@@ -110,7 +110,7 @@ static	void			(*SoundUserHook)(void);
 		word			DigiLastStart,DigiLastEnd;
 		boolean			DigiPlaying;
 static	boolean			DigiMissed,DigiLastSegment;
-static	memptr			DigiNextAddr;
+static	void*			DigiNextAddr;
 static	word			DigiNextLen;
 
 //	SoundBlaster variables
@@ -991,10 +991,10 @@ asm	popf
 //
 //	Stuff for digitized sounds
 //
-memptr
+void*
 SDL_LoadDigiSegment(word page)
 {
-	memptr	addr;
+	void*	addr;
 
 #if 0	// for debugging
 asm	mov	dx,STATUS_REGISTER_1
@@ -1025,7 +1025,7 @@ asm	out	dx,al
 }
 
 void
-SDL_PlayDigiSegment(memptr addr,word len)
+SDL_PlayDigiSegment(void* addr,word len)
 {
 	switch (DigiMode)
 	{
@@ -1130,7 +1130,7 @@ void
 SD_PlayDigitized(word which,int leftpos,int rightpos)
 {
 	word	len;
-	memptr	addr;
+	void*	addr;
 
 	if (!DigiMode)
 		return;
@@ -1234,13 +1234,13 @@ SD_SetDigiDevice(SDSMode mode)
 void
 SDL_SetupDigi(void)
 {
-	memptr	list;
+	void*	list;
 	word	far *p,
 			pg;
 	int		i;
 
 	PM_UnlockMainMem();
-	MM_GetPtr(&list,PMPageSize);
+	list = malloc(PMPageSize);
 	PM_CheckMainMem();
 	p = (word far *)MK_FP(PM_GetPage(ChunksInFile - 1),0);
 	_fmemcpy((void far *)list,(void far *)p,PMPageSize);
@@ -1252,9 +1252,9 @@ SDL_SetupDigi(void)
 		pg += (p[1] + (PMPageSize - 1)) / PMPageSize;
 	}
 	PM_UnlockMainMem();
-	MM_GetPtr((memptr *)&DigiList,i * sizeof(word) * 2);
+	DigiList = malloc(i * sizeof(word) * 2);
 	_fmemcpy((void far *)DigiList,(void far *)list,i * sizeof(word) * 2);
-	MM_FreePtr(&list);
+	free(list);
 	NumDigi = i;
 
 	for (i = 0;i < LASTSOUND;i++)

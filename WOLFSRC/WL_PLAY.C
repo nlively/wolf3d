@@ -69,7 +69,7 @@ boolean		buttonheld[NUMBUTTONS];
 
 boolean		demorecord,demoplayback;
 char		far *demoptr, far *lastdemoptr;
-memptr		demobuffer;
+void*		demobuffer;
 
 //
 // curent user input
@@ -994,12 +994,6 @@ void StopMusic(void)
 	int	i;
 
 	SD_MusicOff();
-	for (i = 0;i < LASTMUSIC;i++)
-		if (audiosegs[STARTMUSIC + i])
-		{
-			MM_SetPurge(&((memptr)audiosegs[STARTMUSIC + i]),3);
-			MM_SetLock(&((memptr)audiosegs[STARTMUSIC + i]),false);
-		}
 }
 
 //==========================================================================
@@ -1023,15 +1017,7 @@ void StartMusic(void)
 //	if ((chunk == -1) || (MusicMode != smm_AdLib))
 //DEBUG control panel		return;
 
-	MM_BombOnError (false);
-	MM_BombOnError (true);
-	if (mmerror)
-		mmerror = false;
-	else
-	{
-		MM_SetLock(&((memptr)audiosegs[STARTMUSIC + chunk]),true);
-		SD_StartMusic((MusicGroup far *)audiosegs[STARTMUSIC + chunk]);
-	}
+	SD_StartMusic((MusicGroup far *)audiosegs[STARTMUSIC + chunk]);
 }
 
 

@@ -737,15 +737,11 @@ void HelpScreens (void)
 {
 	int			artnum;
 	char far 	*text;
-	memptr		layout;
-
-
-	MM_SortMem ();
+	void*		layout;
 #ifdef JAPAN
 	ShowArticle (0);
 	VW_FadeOut();
 	FreeMusic ();
-	MM_SortMem ();
 #else
 
 
@@ -754,19 +750,15 @@ void HelpScreens (void)
 #ifdef ARTSEXTERN
 	artnum = helpextern;
 	text = (char _seg *)AM_GetGraphicsAsset(artnum);
-	MM_SetLock (&AM_GetGraphicsAsset(artnum), true);
 #else
 	CA_LoadFile (helpfilename,&layout);
 	text = (char _seg *)layout;
-	MM_SetLock (&layout, true);
 #endif
 
 	ShowArticle (text);
 
-#ifdef ARTSEXTERN
-	MM_FreePtr (&AM_GetGraphicsAsset(artnum));
-#else
-	MM_FreePtr (&layout);
+#ifndef ARTSEXTERN
+	free(layout);
 #endif
 
 
@@ -774,7 +766,6 @@ void HelpScreens (void)
 	VW_FadeOut();
 
 	FreeMusic ();
-	MM_SortMem ();
 #endif
 }
 #endif
@@ -786,12 +777,10 @@ void EndText (void)
 {
 	int			artnum;
 	char far 	*text;
-	memptr		layout;
+	void*		layout;
 
 
 	ClearMemory ();
-
-	MM_SortMem ();
 #ifdef JAPAN
 	ShowArticle(gamestate.episode + 1);
 
@@ -803,7 +792,6 @@ void EndText (void)
 		Mouse(MDelta);	// Clear accumulated mouse movement
 
 	FreeMusic ();
-	MM_SortMem ();
 #else
 
 
@@ -811,20 +799,16 @@ void EndText (void)
 #ifdef ARTSEXTERN
 	artnum = endextern+gamestate.episode;
 	text = (char _seg *)AM_GetGraphicsAsset(artnum);
-	MM_SetLock (&AM_GetGraphicsAsset(artnum), true);
 #else
 	endfilename[6] = '1'+gamestate.episode;
 	CA_LoadFile (endfilename,&layout);
 	text = (char _seg *)layout;
-	MM_SetLock (&layout, true);
 #endif
 
 	ShowArticle (text);
 
-#ifdef ARTSEXTERN
-	MM_FreePtr (&AM_GetGraphicsAsset(artnum));
-#else
-	MM_FreePtr (&layout);
+#ifndef ARTSEXTERN
+	free(layout);
 #endif
 
 
@@ -835,6 +819,5 @@ void EndText (void)
 		Mouse(MDelta);	// Clear accumulated mouse movement
 
 	FreeMusic ();
-	MM_SortMem ();
 #endif
 }

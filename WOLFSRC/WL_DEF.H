@@ -909,7 +909,7 @@ extern	boolean		buttonstate[NUMBUTTONS];
 
 extern	boolean		demorecord,demoplayback;
 extern	char		far *demoptr, far *lastdemoptr;
-extern	memptr		demobuffer;
+extern	void*		demobuffer;
 
 
 

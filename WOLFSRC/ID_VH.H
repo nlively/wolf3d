@@ -29,7 +29,7 @@ typedef	struct
 	unsigned	planesize[MAXSHIFTS];
 	unsigned	width[MAXSHIFTS];
 	byte		data[];
-} spritetype;		// the memptr for each sprite points to this
+} spritetype;		// the pointer for each sprite points to this
 
 typedef struct
 {

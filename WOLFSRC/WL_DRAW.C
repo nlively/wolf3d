@@ -1072,7 +1072,7 @@ visobj_t	vislist[MAXVISABLE],*visptr,*visstep,*farthest;
 void DrawScaleds (void)
 {
 	int 		i,j,least,numvisable,height;
-	memptr		shape;
+	void*		shape;
 	byte		*tilespot,*visspot;
 	int			shapenum;
 	unsigned	spotloc;

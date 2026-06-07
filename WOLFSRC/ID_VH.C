@@ -169,6 +169,7 @@ bufferwidth = ((dest+1)-origdest)*4;
 void VL_MungePic (byte far *source, unsigned width, unsigned height)
 {
 	unsigned	x,y,plane,size,pwidth;
+	void* temp;
 	byte		_seg *temp, far *dest, far *srcline;
 
 	size = width*height;
@@ -179,7 +180,7 @@ void VL_MungePic (byte far *source, unsigned width, unsigned height)
 //
 // copy the pic to a temp buffer
 //
-	MM_GetPtr (&(memptr)temp,size);
+	temp = malloc(size);
 	_fmemcpy (temp,source,size);
 
 //
@@ -199,7 +200,7 @@ void VL_MungePic (byte far *source, unsigned width, unsigned height)
 		}
 	}
 
-	MM_FreePtr (&(memptr)temp);
+	free(temp);
 }
 
 void VWL_MeasureString (char far *string, word *width, word *height

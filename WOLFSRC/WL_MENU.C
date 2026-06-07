@@ -403,7 +403,6 @@ void US_ControlPanel(byte scancode)
 		{
 			VW_FadeOut();
 			StartCPMusic (XJAZNAZI_MUS);
-			MM_SortMem ();
 			ClearMemory ();
 
 
@@ -455,15 +454,9 @@ void US_ControlPanel(byte scancode)
 							start = STARTADLIBSOUNDS;
 							break;
 					}
-
-					if (SoundMode != sdm_Off)
-						for (i=0;i<NUMSOUNDS;i++,start++)
-							if (audiosegs[start])
-								MM_SetPurge (&(memptr)audiosegs[start],3);		// make purgable
 				}
 				#endif
 
-				MM_SortMem();
 				StartGame=1;
 				if (!ingame)
 					StartCPMusic(INTROSONG);
@@ -507,10 +500,6 @@ void US_ControlPanel(byte scancode)
 	}
 
 	// RETURN/START GAME EXECUTION
-
-#ifdef SPEAR
-	MM_SortMem ();
-#endif
 }
 
 
@@ -3568,28 +3557,24 @@ void StartCPMusic(int song)
 {
 	musicnames	chunk;
 
-	if (audiosegs[STARTMUSIC + lastmusic])	// JDC
-		MM_FreePtr ((memptr *)&audiosegs[STARTMUSIC + lastmusic]);
+	if (audiosegs[STARTMUSIC + lastmusic]) { // JDC
+		free(audiossegs[STARTMUSIC + lastmusic]);
+		audiossegs[STARTMUSIC + lastmusic] = NULL;
+	}
 	lastmusic = song;
 
 	SD_MusicOff();
 	chunk =	song;
 
-	MM_BombOnError (false);
-	MM_BombOnError (true);
-	if (mmerror)
-		mmerror = false;
-	else
-	{
-		MM_SetLock(&((memptr)audiosegs[STARTMUSIC + chunk]),true);
-		SD_StartMusic((MusicGroup far *)audiosegs[STARTMUSIC + chunk]);
-	}
+	SD_StartMusic((MusicGroup far *)audiosegs[STARTMUSIC + chunk]);
 }
 
 void FreeMusic (void)
 {
-	if (audiosegs[STARTMUSIC + lastmusic])	// JDC
-		MM_FreePtr ((memptr *)&audiosegs[STARTMUSIC + lastmusic]);
+	if (audiosegs[STARTMUSIC + lastmusic]) {	// JDC
+		free(audiossegs[STARTMUSIC + lastmusic]);
+		audiossegs[STARTMUSIC + lastmusic] = NULL;
+	}
 }
 
 
