@@ -5,5 +5,7 @@
 void AM_SetupAssets();
 void AM_FreeAssets();
 void* AM_GetGraphicsAsset(int asset_id);
+void* AM_GetAudioAsset(int asset_id);
+void* AM_GetMapAsset(int asset_id);
 
 #endif

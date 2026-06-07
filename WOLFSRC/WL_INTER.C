@@ -1621,21 +1621,8 @@ void CopyProtection(void)
 		}
 		else
 		{
-			int start;
-
-
 			SD_PlaySound(BONUS1UPSND);
 			SD_WaitSoundDone();
-
-			switch(SoundMode)
-			{
-				case sdm_Off: return;
-				case sdm_PC: start = STARTPCSOUNDS; break;
-				case sdm_AdLib: start = STARTADLIBSOUNDS;
-			}
-
-			for (i=0;i<NUMSOUNDS;i++,start++)
-				free(audiosegs[start]); // TODO: is this right?
 			return;
 		}
 	}

@@ -5,6 +5,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 #include "wl_def.h"
+#include "assets.h"
 #pragma hdrstop
 
 //
@@ -3557,26 +3558,13 @@ void StartCPMusic(int song)
 {
 	musicnames	chunk;
 
-	if (audiosegs[STARTMUSIC + lastmusic]) { // JDC
-		free(audiossegs[STARTMUSIC + lastmusic]);
-		audiossegs[STARTMUSIC + lastmusic] = NULL;
-	}
 	lastmusic = song;
 
 	SD_MusicOff();
 	chunk =	song;
 
-	SD_StartMusic((MusicGroup far *)audiosegs[STARTMUSIC + chunk]);
+	SD_StartMusic((MusicGroup *)AM_GetAudioAsset(STARTMUSIC + chunk));
 }
-
-void FreeMusic (void)
-{
-	if (audiosegs[STARTMUSIC + lastmusic]) {	// JDC
-		free(audiossegs[STARTMUSIC + lastmusic]);
-		audiossegs[STARTMUSIC + lastmusic] = NULL;
-	}
-}
-
 
 ///////////////////////////////////////////////////////////////////////////
 //

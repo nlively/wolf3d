@@ -741,7 +741,6 @@ void HelpScreens (void)
 #ifdef JAPAN
 	ShowArticle (0);
 	VW_FadeOut();
-	FreeMusic ();
 #else
 
 
@@ -761,11 +760,7 @@ void HelpScreens (void)
 	free(layout);
 #endif
 
-
-
 	VW_FadeOut();
-
-	FreeMusic ();
 #endif
 }
 #endif
@@ -790,8 +785,6 @@ void EndText (void)
 	IN_ClearKeysDown();
 	if (MousePresent)
 		Mouse(MDelta);	// Clear accumulated mouse movement
-
-	FreeMusic ();
 #else
 
 
@@ -817,7 +810,5 @@ void EndText (void)
 	IN_ClearKeysDown();
 	if (MousePresent)
 		Mouse(MDelta);	// Clear accumulated mouse movement
-
-	FreeMusic ();
 #endif
 }

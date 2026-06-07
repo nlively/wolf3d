@@ -113,3 +113,11 @@ void AM_FreeAssets() {
 void* AM_GetGraphicsAsset(int asset_id) {
     // TODO: implement this
 }
+
+void* AM_GetAudioAsset(int asset_id) {
+    // TODO: implement this
+}
+
+void* AM_GetMapAsset(int asset_id) {
+    // TODO: implement this
+}

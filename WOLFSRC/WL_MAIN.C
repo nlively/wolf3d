@@ -705,18 +705,6 @@ void SignonScreen (void)                        // VGA version
 		VL_MemToScreen (&introscn,320,200,0,0);
 		VW_SetScreen(0,0);
 	}
-
-//
-// reclaim the memory from the linked in signon screen
-//
-	segstart = FP_SEG(&introscn);
-	seglength = 64000/16;
-	if (FP_OFF(&introscn))
-	{
-		segstart++;
-		seglength--;
-	}
-	MML_UseSpace (segstart,seglength);
 }
 
 
