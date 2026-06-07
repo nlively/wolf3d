@@ -3,38 +3,6 @@
 #include "asset_hashmap.h"
 #include "assets.h"
 
-typedef struct {
-    char* item;
-
-} HashMapBucket;
-
-typedef struct {
-    int capacity;
-    int size;
-    HashMapBucket* buckets;
-} HashMap;
-
-typedef enum {
-    ASSET_TEXTURE,
-    ASSET_SPRITE,
-    ASSET_FONT,
-    ASSET_SOUND,
-} AssetType;
-
-typedef enum {
-    ASSET_LOAD_OK,
-    ASSET_LOAD_FILE_OPEN_ERR,
-    ASSET_LOAD_FILE_READ_ERR,
-    ASSET_LOAD_MEM_ERR
-} LoadFileResult;
-
-typedef struct {
-    HashMap* fonts;
-    HashMap* sounds;
-    HashMap* textures;
-    HashMap* sprites;
-} AssetCache;
-
 
 AssetCache* asset_cache = NULL; 
 
@@ -118,6 +86,27 @@ void* AM_GetAudioAsset(int asset_id) {
     // TODO: implement this
 }
 
-void* AM_GetMapAsset(int asset_id) {
+MapAsset* AM_GetMapAsset(int asset_id) {
     // TODO: implement this
+}
+
+// The level Get/SetMapTile currently operate on. Set once per level load.
+static MapAsset* current_map = NULL;
+
+void AM_SetCurrentMap(int asset_id) {
+    current_map = AM_GetMapAsset(asset_id);
+}
+
+uint16_t AM_GetMapTile(int plane, int x, int y) {
+    // Out-of-range reads as empty; mirrors the always-solid map border the
+    // original neighbor arithmetic relied on, without walking off the array.
+    if (x < 0 || y < 0 || x >= MAP_DIM || y >= MAP_DIM)
+        return 0;
+    return current_map->planes[plane][y*MAP_DIM + x];
+}
+
+void AM_SetMapTile(int plane, int x, int y, uint16_t value) {
+    if (x < 0 || y < 0 || x >= MAP_DIM || y >= MAP_DIM)
+        return;
+    current_map->planes[plane][y*MAP_DIM + x] = value;
 }

@@ -846,7 +846,7 @@ statetype s_gretelshoot8 	= {false,SPR_GRETEL_SHOOT1,10,NULL,NULL,&s_gretelchase
 
 void SpawnStand (enemy_t which, int tilex, int tiley, int dir)
 {
-	unsigned	far *map,tile;
+	int		tile;
 
 	switch (which)
 	{
@@ -880,21 +880,20 @@ void SpawnStand (enemy_t which, int tilex, int tiley, int dir)
 	}
 
 
-	map = mapsegs[0]+farmapylookup[tiley]+tilex;
-	if (*map == AMBUSHTILE)
+	if (AM_GetMapTile(0, tilex, tiley) == AMBUSHTILE)
 	{
 		tilemap[tilex][tiley] = 0;
 
-		if (*(map+1) >= AREATILE)
-			tile = *(map+1);
-		if (*(map-mapwidth) >= AREATILE)
-			tile = *(map-mapwidth);
-		if (*(map+mapwidth) >= AREATILE)
-			tile = *(map+mapwidth);
-		if ( *(map-1) >= AREATILE)
-			tile = *(map-1);
+		if (AM_GetMapTile(0, tilex+1, tiley) >= AREATILE)
+			tile = AM_GetMapTile(0, tilex+1, tiley);
+		if (AM_GetMapTile(0, tilex, tiley-1) >= AREATILE)
+			tile = AM_GetMapTile(0, tilex, tiley-1);
+		if (AM_GetMapTile(0, tilex, tiley+1) >= AREATILE)
+			tile = AM_GetMapTile(0, tilex, tiley+1);
+		if (AM_GetMapTile(0, tilex-1, tiley) >= AREATILE)
+			tile = AM_GetMapTile(0, tilex-1, tiley);
 
-		*map = tile;
+		AM_SetMapTile(0, tilex, tiley, tile);
 		new->areanumber = tile-AREATILE;
 
 		new->flags |= FL_AMBUSH;
@@ -935,7 +934,6 @@ void SpawnDeadGuard (int tilex, int tiley)
 
 void SpawnBoss (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	SpawnNewObj (tilex,tiley,&s_bossstand);
 	new->speed = SPDPATROL;
@@ -958,7 +956,6 @@ void SpawnBoss (int tilex, int tiley)
 
 void SpawnGretel (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	SpawnNewObj (tilex,tiley,&s_gretelstand);
 	new->speed = SPDPATROL;
@@ -1245,7 +1242,6 @@ statetype s_transshoot8 	= {false,SPR_TRANS_SHOOT1,10,NULL,NULL,&s_transchase1};
 
 void SpawnTrans (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	if (SoundBlasterPresent && DigiMode != sds_Off)
 		s_transdie01.tictime = 105;
@@ -1326,7 +1322,6 @@ statetype s_ubershoot7 	= {false,SPR_UBER_SHOOT1,12,NULL,NULL,&s_uberchase1};
 
 void SpawnUber (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	if (SoundBlasterPresent && DigiMode != sds_Off)
 		s_uberdie01.tictime = 70;
@@ -1425,7 +1420,6 @@ statetype s_willshoot6 	= {false,SPR_WILL_SHOOT4,10,NULL,T_Shoot,&s_willchase1};
 
 void SpawnWill (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	if (SoundBlasterPresent && DigiMode != sds_Off)
 		s_willdie2.tictime = 70;
@@ -1600,7 +1594,6 @@ statetype s_deathshoot5 	= {false,SPR_DEATH_SHOOT4,10,NULL,T_Shoot,&s_deathchase
 
 void SpawnDeath (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	if (SoundBlasterPresent && DigiMode != sds_Off)
 		s_deathdie2.tictime = 105;
@@ -1793,7 +1786,6 @@ void A_Breathing (objtype *ob)
 
 void SpawnAngel (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 
 	if (SoundBlasterPresent && DigiMode != sds_Off)
@@ -1912,7 +1904,6 @@ statetype s_spectrewake	= {false,SPR_SPECTRE_F4,10,NULL,A_Dormant,&s_spectrewake
 
 void SpawnSpectre (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	SpawnNewObj (tilex,tiley,&s_spectrewait1);
 	new->obclass = spectreobj;
@@ -1993,7 +1984,6 @@ moveok:
 
 void SpawnGhosts (int which, int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	switch(which)
 	{
@@ -2211,7 +2201,6 @@ statetype s_fatshoot6 	= {false,SPR_FAT_SHOOT4,10,NULL,T_Shoot,&s_fatchase1};
 
 void SpawnSchabbs (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	if (DigiMode != sds_Off)
 		s_schabbdie2.tictime = 140;
@@ -2240,7 +2229,6 @@ void SpawnSchabbs (int tilex, int tiley)
 
 void SpawnGift (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	if (DigiMode != sds_Off)
 	  s_giftdie2.tictime = 140;
@@ -2269,7 +2257,6 @@ void SpawnGift (int tilex, int tiley)
 
 void SpawnFat (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	if (DigiMode != sds_Off)
 	  s_fatdie2.tictime = 140;
@@ -2825,7 +2812,6 @@ statetype s_hitlershoot6 	= {false,SPR_HITLER_SHOOT2,10,NULL,T_Shoot,&s_hitlerch
 
 void SpawnFakeHitler (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 
 	if (DigiMode != sds_Off)
@@ -2855,7 +2841,6 @@ void SpawnFakeHitler (int tilex, int tiley)
 
 void SpawnHitler (int tilex, int tiley)
 {
-	unsigned	far *map,tile;
 
 	if (DigiMode != sds_Off)
 		s_hitlerdie2.tictime = 140;
@@ -2885,7 +2870,7 @@ void SpawnHitler (int tilex, int tiley)
 
 void A_HitlerMorph (objtype *ob)
 {
-	unsigned	far *map,tile,hitpoints[4]={500,700,800,900};
+	unsigned	hitpoints[4]={500,700,800,900};
 
 
 	SpawnNewObj (ob->tilex,ob->tiley,&s_hitlerchase1);
@@ -3620,7 +3605,6 @@ statetype s_deathcam = {false,0,0,NULL,NULL,NULL};
 
 void SpawnBJVictory (void)
 {
-	unsigned	far *map,tile;
 
 	SpawnNewObj (player->tilex,player->tiley+1,&s_bjrun1);
 	new->x = player->x;

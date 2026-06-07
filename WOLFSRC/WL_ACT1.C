@@ -1,6 +1,7 @@
 // WL_ACT1.C
 
 #include "WL_DEF.H"
+#include "assets.h"
 #pragma hdrstop
 
 /*
@@ -350,7 +351,6 @@ void InitDoorList (void)
 void SpawnDoor (int tilex, int tiley, boolean vertical, int lock)
 {
 	int	areanumber;
-	unsigned	far *map;
 
 	if (doornum==64)
 		Quit ("64+ doors on level!");
@@ -369,16 +369,15 @@ void SpawnDoor (int tilex, int tiley, boolean vertical, int lock)
 // for door sides
 //
 	tilemap[tilex][tiley] = doornum | 0x80;
-	map = mapsegs[0] + farmapylookup[tiley]+tilex;
 	if (vertical)
 	{
-		*map = *(map-1);                        // set area number
+		AM_SetMapTile(0, tilex, tiley, AM_GetMapTile(0, tilex-1, tiley));	// set area number
 		tilemap[tilex][tiley-1] |= 0x40;
 		tilemap[tilex][tiley+1] |= 0x40;
 	}
 	else
 	{
-		*map = *(map-mapwidth);					// set area number
+		AM_SetMapTile(0, tilex, tiley, AM_GetMapTile(0, tilex, tiley-1));	// set area number
 		tilemap[tilex-1][tiley] |= 0x40;
 		tilemap[tilex+1][tiley] |= 0x40;
 	}
@@ -468,8 +467,7 @@ void CloseDoor (int door)
 //
 // play door sound if in a connected area
 //
-	area = *(mapsegs[0] + farmapylookup[doorobjlist[door].tiley]
-			+doorobjlist[door].tilex)-AREATILE;
+	area = AM_GetMapTile(0, doorobjlist[door].tilex, doorobjlist[door].tiley)-AREATILE;
 	if (areabyplayer[area])
 	{
 		PlaySoundLocTile(CLOSEDOORSND,doorobjlist[door].tilex,doorobjlist[door].tiley);	// JAB
@@ -554,8 +552,9 @@ void DoorOpen (int door)
 void DoorOpening (int door)
 {
 	int		area1,area2;
-	unsigned	far	*map;
 	long	position;
+	int		tilex = doorobjlist[door].tilex;
+	int		tiley = doorobjlist[door].tiley;
 
 	position = doorposition[door];
 	if (!position)
@@ -563,18 +562,15 @@ void DoorOpening (int door)
 	//
 	// door is just starting to open, so connect the areas
 	//
-		map = mapsegs[0] + farmapylookup[doorobjlist[door].tiley]
-			+doorobjlist[door].tilex;
-
 		if (doorobjlist[door].vertical)
 		{
-			area1 =	*(map+1);
-			area2 =	*(map-1);
+			area1 =	AM_GetMapTile(0, tilex+1, tiley);
+			area2 =	AM_GetMapTile(0, tilex-1, tiley);
 		}
 		else
 		{
-			area1 =	*(map-mapwidth);
-			area2 =	*(map+mapwidth);
+			area1 =	AM_GetMapTile(0, tilex, tiley-1);
+			area2 =	AM_GetMapTile(0, tilex, tiley+1);
 		}
 		area1 -= AREATILE;
 		area2 -= AREATILE;
@@ -617,7 +613,6 @@ void DoorOpening (int door)
 void DoorClosing (int door)
 {
 	int		area1,area2,move;
-	unsigned	far	*map;
 	long	position;
 	int		tilex,tiley;
 
@@ -646,18 +641,15 @@ void DoorClosing (int door)
 
 		doorobjlist[door].action = dr_closed;
 
-		map = mapsegs[0] + farmapylookup[doorobjlist[door].tiley]
-			+doorobjlist[door].tilex;
-
 		if (doorobjlist[door].vertical)
 		{
-			area1 =	*(map+1);
-			area2 =	*(map-1);
+			area1 =	AM_GetMapTile(0, tilex+1, tiley);
+			area2 =	AM_GetMapTile(0, tilex-1, tiley);
 		}
 		else
 		{
-			area1 =	*(map-mapwidth);
-			area2 =	*(map+mapwidth);
+			area1 =	AM_GetMapTile(0, tilex, tiley-1);
+			area2 =	AM_GetMapTile(0, tilex, tiley+1);
 		}
 		area1 -= AREATILE;
 		area2 -= AREATILE;
@@ -791,7 +783,7 @@ void PushWall (int checkx, int checky, int dir)
 	pwallstate = 1;
 	pwallpos = 0;
 	tilemap[pwallx][pwally] |= 0xc0;
-	*(mapsegs[1]+farmapylookup[pwally]+pwallx) = 0;	// remove P tile info
+	AM_SetMapTile(1, pwallx, pwally, 0);	// remove P tile info
 
 	SD_PlaySound (PUSHWALLSND);
 }
@@ -827,7 +819,7 @@ void MovePWalls (void)
 		//
 		tilemap[pwallx][pwally] = 0;
 		(unsigned)actorat[pwallx][pwally] = 0;
-		*(mapsegs[0]+farmapylookup[pwally]+pwallx) = player->areanumber+AREATILE;
+		AM_SetMapTile(0, pwallx, pwally, player->areanumber+AREATILE);
 
 		//
 		// see if it should be pushed farther

@@ -221,13 +221,11 @@ void ScanInfoPlane (void)
 {
 	unsigned	x,y,i,j;
 	int			tile;
-	unsigned	far	*start;
 
-	start = mapsegs[1];
 	for (y=0;y<mapheight;y++)
 		for (x=0;x<mapwidth;x++)
 		{
-			tile = *start++;
+			tile = AM_GetMapTile(1, x, y);
 			if (!tile)
 				continue;
 
@@ -624,7 +622,7 @@ void ScanInfoPlane (void)
 void SetupGameLevel (void)
 {
 	int	x,y,i;
-	unsigned	far *map,tile,spot;
+	int	tile;
 
 
 	if (!loadedgame)
@@ -648,8 +646,9 @@ void SetupGameLevel (void)
 //
 	mapon-=gamestate.episode*10;
 
-	mapwidth = mapheaderseg[mapon]->width;
-	mapheight = mapheaderseg[mapon]->height;
+	AM_SetCurrentMap (mapon);
+	mapwidth = AM_GetMapAsset(mapon)->width;
+	mapheight = AM_GetMapAsset(mapon)->height;
 
 	if (mapwidth != 64 || mapheight != 64)
 		Quit ("Map not 64*64!");
@@ -660,11 +659,10 @@ void SetupGameLevel (void)
 //
 	memset (tilemap,0,sizeof(tilemap));
 	memset (actorat,0,sizeof(actorat));
-	map = mapsegs[0];
 	for (y=0;y<mapheight;y++)
 		for (x=0;x<mapwidth;x++)
 		{
-			tile = *map++;
+			tile = AM_GetMapTile(0, x, y);
 			if (tile<AREATILE)
 			{
 			// solid wall
@@ -686,11 +684,10 @@ void SetupGameLevel (void)
 	InitDoorList ();
 	InitStaticList ();
 
-	map = mapsegs[0];
 	for (y=0;y<mapheight;y++)
 		for (x=0;x<mapwidth;x++)
 		{
-			tile = *map++;
+			tile = AM_GetMapTile(0, x, y);
 			if (tile >= 90 && tile <= 101)
 			{
 			// door
@@ -724,27 +721,26 @@ void SetupGameLevel (void)
 //
 // take out the ambush markers
 //
-	map = mapsegs[0];
 	for (y=0;y<mapheight;y++)
 		for (x=0;x<mapwidth;x++)
 		{
-			tile = *map++;
+			tile = AM_GetMapTile(0, x, y);
 			if (tile == AMBUSHTILE)
 			{
 				tilemap[x][y] = 0;
 				if ( (unsigned)actorat[x][y] == AMBUSHTILE)
 					actorat[x][y] = NULL;
 
-				if (*map >= AREATILE)
-					tile = *map;
-				if (*(map-1-mapwidth) >= AREATILE)
-					tile = *(map-1-mapwidth);
-				if (*(map-1+mapwidth) >= AREATILE)
-					tile = *(map-1+mapwidth);
-				if ( *(map-2) >= AREATILE)
-					tile = *(map-2);
+				if (AM_GetMapTile(0, x+1, y) >= AREATILE)
+					tile = AM_GetMapTile(0, x+1, y);
+				if (AM_GetMapTile(0, x, y-1) >= AREATILE)
+					tile = AM_GetMapTile(0, x, y-1);
+				if (AM_GetMapTile(0, x, y+1) >= AREATILE)
+					tile = AM_GetMapTile(0, x, y+1);
+				if (AM_GetMapTile(0, x-1, y) >= AREATILE)
+					tile = AM_GetMapTile(0, x-1, y);
 
-				*(map-1) = tile;
+				AM_SetMapTile(0, x, y, tile);
 			}
 		}
 }

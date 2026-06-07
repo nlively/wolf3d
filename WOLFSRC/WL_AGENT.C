@@ -929,7 +929,6 @@ void Thrust (int angle, long speed)
 {
 	long xmove,ymove;
 	long	slowmax;
-	unsigned	offset;
 
 
 	//
@@ -955,10 +954,9 @@ void Thrust (int angle, long speed)
 	player->tilex = player->x >> TILESHIFT;		// scale to tile values
 	player->tiley = player->y >> TILESHIFT;
 
-	offset = farmapylookup[player->tiley]+player->tilex;
-	player->areanumber = *(mapsegs[0] + offset) -AREATILE;
+	player->areanumber = AM_GetMapTile(0, player->tilex, player->tiley) -AREATILE;
 
-	if (*(mapsegs[1] + offset) == EXITTILE)
+	if (AM_GetMapTile(1, player->tilex, player->tiley) == EXITTILE)
 		VictoryTile ();
 }
 
@@ -1045,7 +1043,7 @@ void Cmd_Use (void)
 	}
 
 	doornum = tilemap[checkx][checky];
-	if (*(mapsegs[1]+farmapylookup[checky]+checkx) == PUSHABLETILE)
+	if (AM_GetMapTile(1, checkx, checky) == PUSHABLETILE)
 	{
 	//
 	// pushable wall
@@ -1062,7 +1060,7 @@ void Cmd_Use (void)
 		buttonheld[bt_use] = true;
 
 		tilemap[checkx][checky]++;		// flip switch
-		if (*(mapsegs[0]+farmapylookup[player->tiley]+player->tilex) == ALTELEVATORTILE)
+		if (AM_GetMapTile(0, player->tilex, player->tiley) == ALTELEVATORTILE)
 			playstate = ex_secretlevel;
 		else
 			playstate = ex_completed;
@@ -1104,7 +1102,7 @@ void SpawnPlayer (int tilex, int tiley, int dir)
 	player->tilex = tilex;
 	player->tiley = tiley;
 	player->areanumber =
-		*(mapsegs[0] + farmapylookup[player->tiley]+player->tilex);
+		AM_GetMapTile(0, player->tilex, player->tiley);
 	player->x = ((long)tilex<<TILESHIFT)+TILEGLOBAL/2;
 	player->y = ((long)tiley<<TILESHIFT)+TILEGLOBAL/2;
 	player->state = &s_player;

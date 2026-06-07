@@ -8,6 +8,7 @@
 #include <VALUES.H>
 
 #include "WL_MENU.H"
+#include "assets.h"
 
 #ifdef SPANISH
 #include "SPANISH.H"
@@ -32,7 +33,7 @@
 	mov dx,ATR_INDEX;mov al,ATR_OVERSCAN;out dx,al;mov al,color;out	dx,al;\
 	mov	al,32;out dx,al};
 
-#define MAPSPOT(x,y,plane)		(*(mapsegs[plane]+farmapylookup[y]+x))
+#define MAPSPOT(x,y,plane)		(AM_GetMapTile(plane,x,y))
 
 #define SIGN(x) 	((x)>0?1:-1)
 #define ABS(x) 		((int)(x)>0?(x):-(x))
