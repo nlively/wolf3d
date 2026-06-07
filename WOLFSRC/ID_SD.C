@@ -58,12 +58,39 @@
 #define	writereg(n)	outportb(alFMData,n)
 #define	readstat()	inportb(alFMStatus)
 
-//	Imports from ID_SD_A.ASM
-extern	void			SDL_SetDS(void),
-						SDL_IndicatePC(boolean on);
-extern	void interrupt	SDL_t0ExtremeAsmService(void),
-						SDL_t0FastAsmService(void),
-						SDL_t0SlowAsmService(void);
+//
+//	Low level sound timer service - formerly ID_SD_A.ASM
+//
+//	These routines used to be the 8253 timer 0 interrupt handlers.  They drove
+//	the AdLib (OPL2), the PC speaker and the Disney Sound Source directly via
+//	port I/O at 140/700/7000 Hz, doing the sound-effect playback, the digitized
+//	sample pumping and the music sequencer in the ISR.
+//
+//	That entire hardware path is being replaced by an SDL audio backend, so the
+//	routines are left as no-op stubs here rather than ported.  The sample
+//	mixing and OPL music sequencing should be re-implemented in the SDL sound
+//	layer instead.
+//
+void SDL_SetDS(void)
+{
+}
+
+void SDL_IndicatePC(boolean on)
+{
+	(void)on;
+}
+
+void interrupt SDL_t0ExtremeAsmService(void)
+{
+}
+
+void interrupt SDL_t0FastAsmService(void)
+{
+}
+
+void interrupt SDL_t0SlowAsmService(void)
+{
+}
 
 //	Global variables
 	boolean		SoundSourcePresent,

@@ -26,6 +26,7 @@
 //			window
 //
 
+#include <time.h>
 #include "ID_HEADS.H"
 
 #pragma	hdrstop
@@ -38,6 +39,17 @@
 		boolean		NoWait;
 		word		PrintX,PrintY;
 		word		WindowX,WindowY,WindowW,WindowH;
+
+
+//
+//	RandomByte() - Return a pseudo-random value in the range 0-255.
+//	Replaces the old table-driven US_RndT() that lived in ID_US_A.ASM; seed
+//	the generator with srand() (see US_Startup / game start).
+//
+int RandomByte(void)
+{
+	return rand() & 0xFF;
+}
 
 //	Internal variables
 #define	ConfigVersion	1
@@ -175,7 +187,7 @@ US_Startup(void)
 
 	harderr(USL_HardError);	// Install the fatal error handler
 
-	US_InitRndT(true);		// Initialize the random number generator
+	srand((unsigned)time(NULL));		// Initialize the random number generator
 
 	for (i = 1;i < _argc;i++)
 	{

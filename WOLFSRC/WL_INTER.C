@@ -1,5 +1,6 @@
 // WL_INTER.C
 
+#include <time.h>
 #include "WL_DEF.H"
 #include "assets.h"
 #pragma hdrstop
@@ -1457,7 +1458,7 @@ void CopyProtection(void)
 	try = 0;
 	VW_FadeOut();
 	StartCPMusic(COPYPRO_MUS);
-	US_InitRndT(true);
+	srand((unsigned)time(NULL));
 
 	while (try<3)
 	{
@@ -1471,7 +1472,7 @@ void CopyProtection(void)
 		WindowH = 200;
 		PrintY = 65;
 
-		quiztype = US_RndT()%totaltypes;
+		quiztype = RandomByte()%totaltypes;
 		switch(quiztype)
 		{
 			//
@@ -1482,7 +1483,7 @@ void CopyProtection(void)
 				US_Print(STR_DEBRIEF);
 				SETFONTCOLOR(PRINTCOLOR,15);
 
-				while (enemypicked[whichboss = US_RndT()&3]);
+				while (enemypicked[whichboss = RandomByte()&3]);
 				enemypicked[whichboss] = 1;
 				bossnum = bosses[whichboss];
 				VWB_DrawPic(128,60,bossnum);
@@ -1515,7 +1516,7 @@ void CopyProtection(void)
 			// MANUAL CHECK
 			//
 			case checkmanual:
-				while (wordpicked[whichword = US_RndT()%5]);
+				while (wordpicked[whichword = RandomByte()%5]);
 				wordpicked[whichword] = 1;
 				US_CPrint(STR_CHECKMAN);
 				SETFONTCOLOR(PRINTCOLOR,15);
@@ -1545,7 +1546,7 @@ void CopyProtection(void)
 			// STAFF QUIZ
 			//
 			case staffquiz:
-				while (memberpicked[whichmem = US_RndT()%5]);
+				while (memberpicked[whichmem = RandomByte()%5]);
 				memberpicked[whichmem] = 1;
 				US_CPrint(STR_ID1);
 				SETFONTCOLOR(PRINTCOLOR,15);
@@ -1575,7 +1576,7 @@ void CopyProtection(void)
 			// MISCELLANEOUS QUESTIONS
 			//
 			case miscquiz:
-				while (whichpicked[whichone = US_RndT()&3]);
+				while (whichpicked[whichone = RandomByte()&3]);
 				whichpicked[whichone] = 1;
 				US_CPrint(MiscTitle[whichone]);
 				SETFONTCOLOR(PRINTCOLOR,15);
@@ -1605,7 +1606,7 @@ void CopyProtection(void)
 
 		if (!match)
 		{
-			whichline = 2*(US_RndT()%9);
+			whichline = 2*(RandomByte()%9);
 			SETFONTCOLOR(14,15);
 			fontnumber = 0;
 			PrintY = 175;
@@ -1630,7 +1631,7 @@ void CopyProtection(void)
 	ClearMemory();
 	ShutdownId();
 
-	_fstrcpy(message,DosMessages[US_RndT()%9]);
+	_fstrcpy(message,DosMessages[RandomByte()%9]);
 
 	_AX = 3;
 	geninterrupt(0x10);

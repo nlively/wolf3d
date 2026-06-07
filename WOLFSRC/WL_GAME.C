@@ -637,9 +637,9 @@ void SetupGameLevel (void)
 	}
 
 	if (demoplayback || demorecord)
-		US_InitRndT (false);
+		srand(0);
 	else
-		US_InitRndT (true);
+		srand((unsigned)time(NULL));
 
 //
 // load the level

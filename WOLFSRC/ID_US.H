@@ -88,7 +88,6 @@ extern	HighScore	Scores[];
 extern	void	US_Startup(void),
 				US_Setup(void),
 				US_Shutdown(void),
-				US_InitRndT(boolean randomize),
 				US_SetLoadSaveHooks(boolean (*load)(int),
 									boolean (*save)(int),
 									void (*reset)(void)),
@@ -115,8 +114,7 @@ extern	void	US_Startup(void),
 extern	boolean	US_UpdateCursor(void),
 				US_LineInput(int x,int y,char *buf,char *def,boolean escok,
 								int maxchars,int maxwidth);
-extern	int		US_CheckParm(char *parm,char **strings),
-				US_RndT(void);
+extern	int		US_CheckParm(char *parm,char **strings);
 
 		void	USL_PrintInCenter(char far *s,Rect r);
 		char 	*USL_GiveSaveName(word game);

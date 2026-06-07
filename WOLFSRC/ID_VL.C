@@ -29,12 +29,116 @@ byte		far	palette1[256][3],far palette2[256][3];
 
 //===========================================================================
 
-// asm
+//
+// Low level VGA register routines.  Originally hand-written in ID_VL_A.ASM;
+// ported to C as part of the modernization so the port target is a single
+// language.
+//
 
-int	 VL_VideoID (void);
-void VL_SetCRTC (int crtc);
-void VL_SetScreen (int crtc, int pelpan);
-void VL_WaitVBL (int vbls);
+/*
+=======================
+=
+= VL_VideoID
+=
+= The original detected MDA/CGA/EGA/MCGA/VGA/Hercules cards via BIOS and
+= 6845 probes.  The modern target is always a VGA-equivalent framebuffer,
+= so just report VGA (5).
+=
+=======================
+*/
+
+int VL_VideoID (void)
+{
+	return 5;					// VGA
+}
+
+
+/*
+=======================
+=
+= VL_WaitVBL
+=
+= Wait for the vertical retrace (returns before the actual vertical sync)
+=
+=======================
+*/
+
+void VL_WaitVBL (int num)
+{
+	while (num--)
+	{
+	//
+	// wait for a display signal to make sure the raster isn't in the
+	// middle of a sync
+	//
+		while (inportb(STATUS_REGISTER_1) & 8)
+			;
+		while (!(inportb(STATUS_REGISTER_1) & 8))
+			;
+	}
+}
+
+
+/*
+=======================
+=
+= VL_SetCRTC
+=
+= Sets the CRTC start address (used for page flipping)
+=
+=======================
+*/
+
+void VL_SetCRTC (int crtc)
+{
+//
+// wait for a display signal to make sure the raster isn't in the middle
+// of a sync
+//
+	while (inportb(STATUS_REGISTER_1) & 1)
+		;
+
+	outportb (CRTC_INDEX,0x0c);				// start address high register
+	outportb (CRTC_INDEX+1,(crtc>>8)&0xff);
+	outportb (CRTC_INDEX,0x0d);				// start address low register
+	outportb (CRTC_INDEX+1,crtc&0xff);
+}
+
+
+/*
+=======================
+=
+= VL_SetScreen
+=
+= Sets the CRTC start address and horizontal pel panning
+=
+=======================
+*/
+
+void VL_SetScreen (int crtc, int pel)
+{
+//
+// wait for a display signal to make sure the raster isn't in the middle
+// of a sync
+//
+	while (inportb(STATUS_REGISTER_1) & 1)
+		;
+
+//
+// set CRTC start
+//
+	outportb (CRTC_INDEX,0x0c);				// start address high register
+	outportb (CRTC_INDEX+1,(crtc>>8)&0xff);
+	outportb (CRTC_INDEX,0x0d);				// start address low register
+	outportb (CRTC_INDEX+1,crtc&0xff);
+
+//
+// set horizontal panning
+//
+	inportb (STATUS_REGISTER_1);			// reset the attribute flip-flop
+	outportb (ATR_INDEX,ATR_PELPAN | 0x20);
+	outportb (ATR_INDEX,pel);				// pel pan value
+}
 
 //===========================================================================
 
@@ -891,47 +995,38 @@ asm	mov	ds,ax
 
 //===========================================================================
 
-#if 0
-
 /*
 =================
 =
 = VL_ScreenToScreen
+=
+= Basic block copy routine.  Copies one block of screen memory to another,
+= using write mode 1 (sets it and returns with write mode 0).  bufferofs is
+= NOT accounted for.
 =
 =================
 */
 
 void VL_ScreenToScreen (unsigned source, unsigned dest,int width, int height)
 {
-	VGAWRITEMODE(1);
-	VGAMAPMASK(15);
+	byte	far *src,far *dst;
+	int		y;
 
-asm	mov	si,[source]
-asm	mov	di,[dest]
-asm	mov	ax,[width]
-asm	mov	bx,[linewidth]
-asm	sub	bx,ax
-asm	mov	dx,[height]
-asm	mov	cx,SCREENSEG
-asm	mov	ds,cx
-asm	mov	es,cx
+	VGAWRITEMODE(1);			// latch copy
+	VGAMAPMASK(15);				// write through all four planes
 
-drawline:
-asm	mov	cx,ax
-asm	rep movsb
-asm	add	si,bx
-asm	add	di,bx
-asm	dec	dx
-asm	jnz	drawline
+	src = MK_FP(SCREENSEG,source);
+	dst = MK_FP(SCREENSEG,dest);
 
-asm	mov	ax,ss
-asm	mov	ds,ax
+	for (y=0 ; y<height ; y++)
+	{
+		_fmemcpy (dst,src,width);
+		src += linewidth;
+		dst += linewidth;
+	}
 
 	VGAWRITEMODE(0);
 }
-
-
-#endif
 
 /*
 =============================================================================

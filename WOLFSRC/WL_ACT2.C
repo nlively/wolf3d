@@ -346,15 +346,15 @@ void T_Projectile (objtype *ob)
 		switch (ob->obclass)
 		{
 		case needleobj:
-			damage = (US_RndT() >>3) + 20;
+			damage = (RandomByte() >>3) + 20;
 			break;
 		case rocketobj:
 		case hrocketobj:
 		case sparkobj:
-			damage = (US_RndT() >>3) + 30;
+			damage = (RandomByte() >>3) + 30;
 			break;
 		case fireobj:
-			damage = (US_RndT() >>3);
+			damage = (RandomByte() >>3);
 			break;
 		}
 
@@ -1059,9 +1059,9 @@ void A_DeathScream (objtype *ob)
 {
 #ifndef UPLOAD
 #ifndef SPEAR
-	if (mapon==9 && !US_RndT())
+	if (mapon==9 && !RandomByte())
 #else
-	if ((mapon==18 || mapon==19) && !US_RndT())
+	if ((mapon==18 || mapon==19) && !RandomByte())
 #endif
 	{
 	 switch(ob->obclass)
@@ -1096,9 +1096,9 @@ void A_DeathScream (objtype *ob)
 				 };
 
 		 #ifndef UPLOAD
-		 PlaySoundLocActor(sounds[US_RndT()%8],ob);
+		 PlaySoundLocActor(sounds[RandomByte()%8],ob);
 		 #else
-		 PlaySoundLocActor(sounds[US_RndT()%2],ob);
+		 PlaySoundLocActor(sounds[RandomByte()%2],ob);
 		 #endif
 		}
 		break;
@@ -1454,7 +1454,7 @@ void T_Will (objtype *ob)
 
 	if (CheckLine(ob))						// got a shot at player?
 	{
-		if ( US_RndT() < (tics<<3) )
+		if ( RandomByte() < (tics<<3) )
 		{
 		//
 		// go into attack frame
@@ -1845,7 +1845,7 @@ void A_Relaunch (objtype *ob)
 		return;
 	}
 
-	if (US_RndT()&1)
+	if (RandomByte()&1)
 	{
 		NewState (ob,&s_angelchase1);
 		return;
@@ -2378,7 +2378,7 @@ void T_Schabb (objtype *ob)
 	if (CheckLine(ob))						// got a shot at player?
 	{
 
-		if ( US_RndT() < (tics<<3) )
+		if ( RandomByte() < (tics<<3) )
 		{
 		//
 		// go into attack frame
@@ -2470,7 +2470,7 @@ void T_Gift (objtype *ob)
 	if (CheckLine(ob))						// got a shot at player?
 	{
 
-		if ( US_RndT() < (tics<<3) )
+		if ( RandomByte() < (tics<<3) )
 		{
 		//
 		// go into attack frame
@@ -2562,7 +2562,7 @@ void T_Fat (objtype *ob)
 	if (CheckLine(ob))						// got a shot at player?
 	{
 
-		if ( US_RndT() < (tics<<3) )
+		if ( RandomByte() < (tics<<3) )
 		{
 		//
 		// go into attack frame
@@ -2964,7 +2964,7 @@ void T_Fake (objtype *ob)
 
 	if (CheckLine(ob))			// got a shot at player?
 	{
-		if ( US_RndT() < (tics<<1) )
+		if ( RandomByte() < (tics<<1) )
 		{
 		//
 		// go into attack frame
@@ -3071,7 +3071,7 @@ void T_Chase (objtype *ob)
 		else
 			chance = (tics<<4)/dist;
 
-		if ( US_RndT()<chance)
+		if ( RandomByte()<chance)
 		{
 		//
 		// go into attack frame
@@ -3463,14 +3463,14 @@ void T_Shoot (objtype *ob)
 
 // see if the shot was a hit
 
-	if (US_RndT()<hitchance)
+	if (RandomByte()<hitchance)
 	{
 		if (dist<2)
-			damage = US_RndT()>>2;
+			damage = RandomByte()>>2;
 		else if (dist<4)
-			damage = US_RndT()>>3;
+			damage = RandomByte()>>3;
 		else
-			damage = US_RndT()>>4;
+			damage = RandomByte()>>4;
 
 		TakeDamage (damage,ob);
 	}
@@ -3532,9 +3532,9 @@ void T_Bite (objtype *ob)
 		dy -= TILEGLOBAL;
 		if (dy <= MINACTORDIST)
 		{
-		   if (US_RndT()<180)
+		   if (RandomByte()<180)
 		   {
-			   TakeDamage (US_RndT()>>4,ob);
+			   TakeDamage (RandomByte()>>4,ob);
 			   return;
 		   }
 		}

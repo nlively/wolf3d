@@ -20,6 +20,12 @@
 #include "F_SPEAR.H"
 #endif
 
+//
+// RandomByte() returns a pseudo-random value in the range 0-255 (defined in
+// ID_US_1.C).  Replaces the old table-driven US_RndT().
+//
+int RandomByte(void);
+
 /*
 =============================================================================
 

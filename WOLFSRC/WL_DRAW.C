@@ -111,7 +111,7 @@ int		horizwall[MAXWALLTILES],vertwall[MAXWALLTILES];
 */
 
 
-void AsmRefresh (void);			// in WL_DR_A.ASM
+void AsmRefresh (void);			// ported from WL_DR_A.ASM, defined below
 
 /*
 ============================================================================
@@ -874,6 +874,231 @@ void HitVertPWall (void)
 }
 
 //==========================================================================
+
+/*
+=====================
+=
+= AsmRefresh
+=
+= Cast a ray for every column of the view and call the appropriate Hit*
+= routine when a wall/door/pushwall is struck.  Originally hand-written in
+= WL_DR_A.ASM; ported to C as part of the modernization so the port target is
+= a single language.  The control flow (the vert/horiz alternation and the
+= door/pushwall handling) mirrors the original assembly so the traced
+= intersections are identical.
+=
+= Register usage in the original, for reference while reading:
+=   xtile / ytile      - current tile being stepped to
+=   xintercept >> 16   - integer x coordinate of the horizontal-wall trace
+=   yintercept >> 16   - integer y coordinate of the vertical-wall trace
+=   xspot / yspot      - flat (tile<<6)+tile indices into tilemap / spotvis
+=
+=====================
+*/
+
+//
+// PartialStep() multiplies a 16.16 fixed step by a 0..0xffff partial and
+// returns the product >> 16, truncated toward zero (matching the original
+// xpartialbyystep / ypartialbyxstep helpers).
+//
+static long PartialStep (long step, unsigned partial)
+{
+	if (step < 0)
+		return -(long)(((unsigned long long)(-step) * partial) >> 16);
+	return (long)(((unsigned long long)step * partial) >> 16);
+}
+
+void AsmRefresh (void)
+{
+	int			angl;
+	unsigned	xpartial,ypartial;
+	int			xspot,yspot;
+
+	for (pixx = 0 ; pixx < (unsigned)viewwidth ; pixx++)
+	{
+	//
+	// setup to trace a ray through pixx
+	//
+		angl = midangle + pixelangle[pixx];
+		if (angl < 0)
+			angl += FINEANGLES;				// -90...-1 is the same as 270...359
+		else if (angl >= FINEANGLES)
+			angl -= FINEANGLES;
+
+		if (angl < 900)
+		{	// 0 - 89 degree arc
+			xtilestep = 1;
+			ytilestep = -1;
+			xstep = finetangent[900-1-angl];
+			ystep = -finetangent[angl];
+			xpartial = xpartialup;
+			ypartial = ypartialdown;
+		}
+		else if (angl < 1800)
+		{	// 90 - 179 degree arc
+			xtilestep = -1;
+			ytilestep = -1;
+			xstep = -finetangent[angl-900];
+			ystep = -finetangent[1800-1-angl];
+			xpartial = xpartialdown;
+			ypartial = ypartialdown;
+		}
+		else if (angl < 2700)
+		{	// 180 - 269 degree arc
+			xtilestep = -1;
+			ytilestep = 1;
+			xstep = -finetangent[2700-1-angl];
+			ystep = finetangent[angl-1800];
+			xpartial = xpartialdown;
+			ypartial = ypartialup;
+		}
+		else
+		{	// 270 - 359 degree arc
+			xtilestep = 1;
+			ytilestep = 1;
+			xstep = finetangent[angl-2700];
+			ystep = finetangent[3600-1-angl];
+			xpartial = xpartialup;
+			ypartial = ypartialup;
+		}
+
+	//
+	// initialise variables for intersection testing
+	//
+		yintercept = viewy + PartialStep(ystep,xpartial);
+		xtile = focaltx + xtilestep;
+		xspot = (xtile<<6) + (int)(yintercept>>16);
+
+		xintercept = viewx + PartialStep(xstep,ypartial);
+		ytile = focalty + ytilestep;
+		yspot = (((int)(xintercept>>16))<<6) + ytile;
+
+	//
+	// trace along this angle until we hit a wall (CORE LOOP)
+	//
+	vertcheck:
+		if (ytilestep == -1)
+		{
+			if ((int)(yintercept>>16) <= ytile)
+				goto horizentry;
+		}
+		else
+		{
+			if ((int)(yintercept>>16) >= ytile)
+				goto horizentry;
+		}
+	vertentry:
+		if ((tilehit = ((byte *)tilemap)[xspot]) != 0)
+			goto hitvert;
+		((byte *)spotvis)[xspot] = 1;
+		xtile += xtilestep;
+		yintercept += ystep;
+		xspot = (xtile<<6) + (int)(yintercept>>16);
+		goto vertcheck;
+
+	horizcheck:
+		if (xtilestep == -1)
+		{
+			if ((int)(xintercept>>16) <= xtile)
+				goto vertentry;
+		}
+		else
+		{
+			if ((int)(xintercept>>16) >= xtile)
+				goto vertentry;
+		}
+	horizentry:
+		if ((tilehit = ((byte *)tilemap)[yspot]) != 0)
+			goto hithoriz;
+		((byte *)spotvis)[yspot] = 1;
+		ytile += ytilestep;
+		xintercept += xstep;
+		yspot = (((int)(xintercept>>16))<<6) + ytile;
+		goto horizcheck;
+
+	//
+	// hit a vertical wall
+	//
+	hitvert:
+		if (tilehit & 0x80)
+		{
+			if (tilehit & 0x40)
+			{	// sliding (pushable) vertical wall
+				long yint = yintercept + ((ystep * (long)pwallpos) >> 6);
+				if ((yint>>16) != (yintercept>>16))
+					goto passvert;				// hit the side of the wall
+				yintercept = yint;
+				xintercept = (long)xtile << 16;
+				HitVertPWall ();
+				continue;
+			}
+			else
+			{	// vertical door
+				long yint = yintercept + (ystep>>1);	// half a step to the door
+				if ((yint>>16) != (yintercept>>16))
+					goto passvert;				// door plane is outside this tile
+				if ((unsigned)(yint & 0xffff) < doorposition[tilehit & 0x7f])
+					goto passvert;				// the door is open past this point
+				yintercept = yint;
+				xintercept = ((long)xtile << 16) + 0x8000;	// middle of the tile
+				HitVertDoor ();
+				continue;
+			}
+		passvert:
+			((byte *)spotvis)[xspot] = 1;
+			xtile += xtilestep;
+			yintercept += ystep;
+			xspot = (xtile<<6) + (int)(yintercept>>16);
+			goto vertcheck;
+		}
+		// solid vertical wall
+		xintercept = (long)xtile << 16;
+		ytile = (int)(yintercept>>16);
+		HitVertWall ();
+		continue;
+
+	//
+	// hit a horizontal wall
+	//
+	hithoriz:
+		if (tilehit & 0x80)
+		{
+			if (tilehit & 0x40)
+			{	// sliding (pushable) horizontal wall
+				long xint = xintercept + ((xstep * (long)pwallpos) >> 6);
+				if ((xint>>16) != (xintercept>>16))
+					goto passhoriz;				// hit the side of the wall
+				xintercept = xint;
+				yintercept = (long)ytile << 16;
+				HitHorizPWall ();
+				continue;
+			}
+			else
+			{	// horizontal door
+				long xint = xintercept + (xstep>>1);	// half a step to the door
+				if ((xint>>16) != (xintercept>>16))
+					goto passhoriz;				// door plane is outside this tile
+				if ((unsigned)(xint & 0xffff) < doorposition[tilehit & 0x7f])
+					goto passhoriz;				// the door is open past this point
+				xintercept = xint;
+				yintercept = ((long)ytile << 16) + 0x8000;	// middle of the tile
+				HitHorizDoor ();
+				continue;
+			}
+		passhoriz:
+			((byte *)spotvis)[yspot] = 1;
+			ytile += ytilestep;
+			xintercept += xstep;
+			yspot = (((int)(xintercept>>16))<<6) + ytile;
+			goto horizcheck;
+		}
+		// solid horizontal wall
+		xtile = (int)(xintercept>>16);
+		yintercept = (long)ytile << 16;
+		HitHorizWall ();
+		continue;
+	}
+}
 
 //==========================================================================
 

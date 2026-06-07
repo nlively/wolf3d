@@ -83,7 +83,7 @@ void SpawnNewObj (unsigned tilex, unsigned tiley, statetype *state)
 	GetNewActor ();
 	new->state = state;
 	if (state->tictime)
-		new->ticcount = US_RndT () % state->tictime;
+		new->ticcount = RandomByte() % state->tictime;
 	else
 		new->ticcount = 0;
 
@@ -422,7 +422,7 @@ void SelectDodgeDir (objtype *ob)
 		dirtry[4] = tdir;
 	}
 
-	if (US_RndT() < 128)
+	if (RandomByte() < 128)
 	{
 		tdir = dirtry[1];
 		dirtry[1] = dirtry[2];
@@ -533,7 +533,7 @@ void SelectChaseDir (objtype *ob)
 			return;
 	}
 
-	if (US_RndT()>128) 	/*randomly determine direction of search*/
+	if (RandomByte()>128) 	/*randomly determine direction of search*/
 	{
 		for (tdir=north;tdir<=west;tdir++)
 		{
@@ -618,7 +618,7 @@ void SelectRunDir (objtype *ob)
 
 /* there is no direct path to the player, so pick another direction */
 
-	if (US_RndT()>128) 	/*randomly determine direction of search*/
+	if (RandomByte()>128) 	/*randomly determine direction of search*/
 	{
 		for (tdir=north;tdir<=west;tdir++)
 		{
@@ -1437,19 +1437,19 @@ boolean SightPlayer (objtype *ob)
 		switch (ob->obclass)
 		{
 		case guardobj:
-			ob->temp2 = 1+US_RndT()/4;
+			ob->temp2 = 1+RandomByte()/4;
 			break;
 		case officerobj:
 			ob->temp2 = 2;
 			break;
 		case mutantobj:
-			ob->temp2 = 1+US_RndT()/6;
+			ob->temp2 = 1+RandomByte()/6;
 			break;
 		case ssobj:
-			ob->temp2 = 1+US_RndT()/6;
+			ob->temp2 = 1+RandomByte()/6;
 			break;
 		case dogobj:
-			ob->temp2 = 1+US_RndT()/8;
+			ob->temp2 = 1+RandomByte()/8;
 			break;
 
 		case bossobj:

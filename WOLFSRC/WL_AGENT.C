@@ -311,9 +311,9 @@ void	UpdateFace (void)
 	  return;
 
 	facecount += tics;
-	if (facecount > US_RndT())
+	if (facecount > RandomByte())
 	{
-		gamestate.faceframe = (US_RndT()>>6);
+		gamestate.faceframe = (RandomByte()>>6);
 		if (gamestate.faceframe==3)
 			gamestate.faceframe = 1;
 
@@ -1158,7 +1158,7 @@ void	KnifeAttack (objtype *ob)
 	}
 
 // hit something
-	DamageActor (closest,US_RndT() >> 4);
+	DamageActor (closest,RandomByte() >> 4);
 }
 
 
@@ -1227,14 +1227,14 @@ void	GunAttack (objtype *ob)
 	dist = dx>dy ? dx:dy;
 
 	if (dist<2)
-		damage = US_RndT() / 4;
+		damage = RandomByte() / 4;
 	else if (dist<4)
-		damage = US_RndT() / 6;
+		damage = RandomByte() / 6;
 	else
 	{
-		if ( (US_RndT() / 12) < dist)		// missed
+		if ( (RandomByte() / 12) < dist)		// missed
 			return;
-		damage = US_RndT() / 6;
+		damage = RandomByte() / 6;
 	}
 
 	DamageActor (closest,damage);

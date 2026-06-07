@@ -735,7 +735,7 @@ int CP_CheckQuick(unsigned scancode)
 				#ifdef SPANISH
 			if (Confirm(ENDGAMESTR))
 				#else
-			if (Confirm(endStrings[US_RndT()&0x7+(US_RndT()&1)]))
+			if (Confirm(endStrings[RandomByte()&0x7+(RandomByte()&1)]))
 				#endif
 			#endif
 			{
@@ -2689,7 +2689,7 @@ void CP_Quit(void)
 	#ifdef SPANISH
 	if (Confirm(ENDGAMESTR))
 	#else
-	if (Confirm(endStrings[US_RndT()&0x7+(US_RndT()&1)]))
+	if (Confirm(endStrings[RandomByte()&0x7+(RandomByte()&1)]))
 	#endif
 
 	#endif
