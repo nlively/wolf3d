@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <conio.h>
 #include "render.h"
 #include "assets.h"
 #include "WL_DEF.H"
@@ -49,7 +48,6 @@ char            str[80],str2[20];
 int				tedlevelnum;
 boolean         tedlevel;
 boolean         nospr;
-boolean         IsA386;
 int                     dirangle[9] = {0,ANGLES/8,2*ANGLES/8,3*ANGLES/8,4*ANGLES/8,
 	5*ANGLES/8,6*ANGLES/8,7*ANGLES/8,ANGLES};
 
@@ -94,48 +92,34 @@ char	configname[13]="CONFIG.";
 
 void ReadConfig(void)
 {
-	int                     file;
-	SDMode          sd;
-	SMMode          sm;
-	SDSMode         sds;
+	FILE *file_ptr = fopen(configname, "rb"); // read-only, binary
 
+	if (file_ptr != NULL) { // valid config file
+		fread(Scores, sizeof(HighScore) * MaxScores, 1, file_ptr);
 
-	if ( (file = open(configname,O_BINARY | O_RDONLY)) != -1)
-	{
-	//
-	// valid config file
-	//
-		read(file,Scores,sizeof(HighScore) * MaxScores);
+		// legacy sound stuff.  keep it here so we can parse the file format, but we won't be using it
+		SDMode          sd;
+		SMMode          sm;
+		SDSMode         sds;
+		fread(&sd, sizeof(sd), 1, file_ptr); // sound mode
+		fread(&sm, sizeof(sm), 1, file_ptr); // music mode
+		fread(&sds, sizeof(sds), 1, file_ptr); // digi device
 
-		read(file,&sd,sizeof(sd));
-		read(file,&sm,sizeof(sm));
-		read(file,&sds,sizeof(sds));
+		fread(&mouseenabled, sizeof(mouseenabled), 1, file_ptr);
+		fread(&joystickenabled, sizeof(joystickenabled), 1, file_ptr);
+		fread(&joypadenabled, sizeof(joypadenabled), 1, file_ptr);
+		fread(&joystickprogressive, sizeof(joystickprogressive), 1, file_ptr);
+		fread(&joystickport, sizeof(joystickport), 1, file_ptr);
 
-		read(file,&mouseenabled,sizeof(mouseenabled));
-		read(file,&joystickenabled,sizeof(joystickenabled));
-		read(file,&joypadenabled,sizeof(joypadenabled));
-		read(file,&joystickprogressive,sizeof(joystickprogressive));
-		read(file,&joystickport,sizeof(joystickport));
+		fread(&dirscan, sizeof(dirscan), 1, file_ptr);
+		fread(&buttonscan, sizeof(buttonscan), 1, file_ptr);
+		fread(&buttonmouse, sizeof(buttonmouse), 1, file_ptr);
+		fread(&buttonjoy, sizeof(buttonjoy), 1, file_ptr);
 
-		read(file,&dirscan,sizeof(dirscan));
-		read(file,&buttonscan,sizeof(buttonscan));
-		read(file,&buttonmouse,sizeof(buttonmouse));
-		read(file,&buttonjoy,sizeof(buttonjoy));
+		fread(&viewsize, sizeof(viewsize), 1, file_ptr);
+		fread(&mouseadjustment, sizeof(mouseadjustment), 1, file_ptr);
 
-		read(file,&viewsize,sizeof(viewsize));
-		read(file,&mouseadjustment,sizeof(mouseadjustment));
-
-		close(file);
-
-		if (sd == sdm_AdLib && !AdLibPresent && !SoundBlasterPresent)
-		{
-			sd = sdm_PC;
-			sd = smm_Off;
-		}
-
-		if ((sds == sds_SoundBlaster && !SoundBlasterPresent) ||
-			(sds == sds_SoundSource && !SoundSourcePresent))
-			sds = sds_Off;
+		fclose(file_ptr);
 
 		if (!MousePresent)
 			mouseenabled = false;
@@ -144,30 +128,7 @@ void ReadConfig(void)
 
 		MainMenu[6].active=1;
 		MainItems.curpos=0;
-	}
-	else
-	{
-	//
-	// no config file, so select by hardware
-	//
-		if (SoundBlasterPresent || AdLibPresent)
-		{
-			sd = sdm_AdLib;
-			sm = smm_AdLib;
-		}
-		else
-		{
-			sd = sdm_PC;
-			sm = smm_Off;
-		}
-
-		if (SoundBlasterPresent)
-			sds = sds_SoundBlaster;
-		else if (SoundSourcePresent)
-			sds = sds_SoundSource;
-		else
-			sds = sds_Off;
-
+	} else { // no config file, so select by hardware
 		if (MousePresent)
 			mouseenabled = true;
 
@@ -179,11 +140,6 @@ void ReadConfig(void)
 		viewsize = 15;
 		mouseadjustment=5;
 	}
-
-	SD_SetMusicMode (sm);
-	SD_SetSoundMode (sd);
-	SD_SetDigiDevice (sds);
-
 }
 
 
@@ -197,34 +153,31 @@ void ReadConfig(void)
 
 void WriteConfig(void)
 {
-	int                     file;
+	FILE *file_ptr = fopen(configname, "wb"); // read-only, binary
 
-	file = open(configname,O_CREAT | O_BINARY | O_WRONLY,
-				S_IREAD | S_IWRITE | S_IFREG);
-
-	if (file != -1)
-	{
+	if (file_ptr != NULL) {
 		write(file,Scores,sizeof(HighScore) * MaxScores);
 
-		write(file,&SoundMode,sizeof(SoundMode));
-		write(file,&MusicMode,sizeof(MusicMode));
-		write(file,&DigiMode,sizeof(DigiMode));
+		// write empty data in the shape of old sound data to keep the order of the file
+		fwrite(&SoundMode, sizeof(SoundMode), 1, file_ptr);
+		fwrite(&MusicMode, sizeof(MusicMode), 1, file_ptr);
+		fwrite(&DigiMode, sizeof(DigiMode), 1, file_ptr);
 
-		write(file,&mouseenabled,sizeof(mouseenabled));
-		write(file,&joystickenabled,sizeof(joystickenabled));
-		write(file,&joypadenabled,sizeof(joypadenabled));
-		write(file,&joystickprogressive,sizeof(joystickprogressive));
-		write(file,&joystickport,sizeof(joystickport));
+		fwrite(&mouseenabled, sizeof(mouseenabled), 1, file_ptr);
+		fwrite(&joystickenabled, sizeof(joystickenabled), 1, file_ptr);
+		fwrite(&joypadenabled, sizeof(joypadenabled), 1, file_ptr);
+		fwrite(&joystickprogressive, sizeof(joystickprogressive), 1, file_ptr);
+		fwrite(&joystickport, sizeof(joystickport), 1, file_ptr);
 
-		write(file,&dirscan,sizeof(dirscan));
-		write(file,&buttonscan,sizeof(buttonscan));
-		write(file,&buttonmouse,sizeof(buttonmouse));
-		write(file,&buttonjoy,sizeof(buttonjoy));
+		fwrite(&dirscan, sizeof(dirscan), 1, file_ptr);
+		fwrite(&buttonscan, sizeof(buttonscan), 1, file_ptr);
+		fwrite(&buttonmouse, sizeof(buttonmouse), 1, file_ptr);
+		fwrite(&buttonjoy, sizeof(buttonjoy), 1, file_ptr);
 
-		write(file,&viewsize,sizeof(viewsize));
-		write(file,&mouseadjustment,sizeof(mouseadjustment));
+		fwrite(&viewsize, sizeof(viewsize), 1, file_ptr);
+		fwrite(&mouseadjustment, sizeof(mouseadjustment), 1, file_ptr);
 
-		close(file);
+		fclose(file_ptr);
 	}
 }
 
