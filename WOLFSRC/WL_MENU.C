@@ -1244,9 +1244,10 @@ void DrawLSAction(int which)
 ////////////////////////////////////////////////////////////////////
 int CP_LoadGame(int quick)
 {
-	int handle,which,exit=0;
+	int which,exit=0;
 	char name[13];
 
+	FILE * file_ptr;
 
 	strcpy(name,SaveName);
 
@@ -1260,12 +1261,12 @@ int CP_LoadGame(int quick)
 		if (SaveGamesAvail[which])
 		{
 			name[7]=which+'0';
-			handle=open(name,O_BINARY);
-			lseek(handle,32,SEEK_SET);
+			file_ptr = fopen(name, "rb");
+			fseek(file_ptr, 32, SEEK_CUR);
 			loadedgame=true;
-			LoadTheGame(handle,0,0);
+			LoadTheGame(file_ptr,0,0);
 			loadedgame=false;
-			close(handle);
+			fclose(handle);
 
 			DrawFace ();
 			DrawHealth ();
@@ -1290,14 +1291,14 @@ int CP_LoadGame(int quick)
 			ShootSnd();
 			name[7]=which+'0';
 
-			handle=open(name,O_BINARY);
-			lseek(handle,32,SEEK_SET);
+			file_ptr = fopen(name, "rb");
+			fseek(file_ptr, 32, SEEK_CUR);
 
 			DrawLSAction(0);
 			loadedgame=true;
 
-			LoadTheGame(handle,LSA_X+8,LSA_Y+5);
-			close(handle);
+			LoadTheGame(file_ptr,LSA_X+8,LSA_Y+5);
+			fclose(handle);
 
 			StartGame=1;
 			ShootSnd();
@@ -1399,10 +1400,9 @@ void PrintLSEntry(int w,int color)
 ////////////////////////////////////////////////////////////////////
 int CP_SaveGame(int quick)
 {
-	int handle,which,exit=0;
+	int which,exit=0;
 	unsigned nwritten;
 	char name[13],input[32];
-
 
 	strcpy(name,SaveName);
 
@@ -1416,15 +1416,15 @@ int CP_SaveGame(int quick)
 		if (SaveGamesAvail[which])
 		{
 			name[7]=which+'0';
-			unlink(name);
-			handle=creat(name,S_IREAD|S_IWRITE);
+			FILE * file_ptr = fopen(name, "r+b");
 
 			strcpy(input,&SaveGameNames[which][0]);
 
-			_dos_write(handle,(void far *)input,32,&nwritten);
-			lseek(handle,32,SEEK_SET);
-			SaveTheGame(handle,0,0);
-			close(handle);
+			fwrite(input, 32, 1, file_ptr)
+
+			SaveTheGame(file_ptr, 0, 0);
+
+			fclose(file_ptr);
 
 			return 1;
 		}
