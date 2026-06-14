@@ -3754,10 +3754,6 @@ void	A_StartDeathCam (objtype *ob)
 	long	dist;
 	int		temp,i;
 
-	FinishPaletteShifts ();
-
-	VW_WaitVBL (100);
-
 	if (gamestate.victoryflag)
 	{
 		playstate = ex_victorious;				// exit castle tile

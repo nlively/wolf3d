@@ -300,25 +300,6 @@ void VWB_DrawTile8M (int x, int y, int tile)
 		VL_MemToScreen (((byte far *)AM_GetGraphicsAsset(STARTTILE8M))+tile*64,8,8,x,y);
 }
 
-
-void VWB_DrawPic (int x, int y, int chunknum)
-{
-	int	picnum = chunknum - STARTPICS;
-	unsigned width,height;
-
-	x &= ~7;
-
-	// TODO: instead of getting our dimensions from `pictable`, look them up via new asset manager
-	width = pictable[picnum].width;
-	height = pictable[picnum].height;
-
-	// TODO: instead of blitting from grsegs, access image from asset manager
-	if (VW_MarkUpdateBlock (x,y,x+width-1,y+height-1))
-		VL_MemToScreen (AM_GetGraphicsAsset(chunknum),width,height,x,y);
-}
-
-
-
 void VWB_DrawPropString	 (char far *string)
 {
 	int x;
@@ -373,9 +354,6 @@ void VH_UpdateScreen (void)
 	byte	far *src, far *dst;
 	int		tile,i;
 
-	VGAMAPMASK(15);				// write through all four planes
-	VGAWRITEMODE(1);			// latch copy
-
 	for (tile = 0 ; tile < UPDATEWIDE*UPDATEHIGH ; tile++)
 	{
 		if (!(tiles[tile] & 1))
@@ -414,89 +392,8 @@ void VW_UpdateScreen (void)
 =============================================================================
 */
 
-/*
-=====================
-=
-= LatchDrawPic
-=
-=====================
-*/
-
-void LatchDrawPic (unsigned x, unsigned y, unsigned picnum)
-{
-	unsigned wide, height, source;
-
-	wide = pictable[picnum-STARTPICS].width;
-	height = pictable[picnum-STARTPICS].height;
-	source = latchpics[2+picnum-LATCHPICS_LUMP_START];
-
-	VL_LatchToScreen (source,wide/4,height,x*8,y);
-}
-
 
 //==========================================================================
-
-/*
-===================
-=
-= LoadLatchMem
-=
-===================
-*/
-
-void LoadLatchMem (void)
-{
-	int	i,j,p,m,width,height,start,end;
-	byte	far *src;
-	unsigned	destoff;
-
-//
-// tile 8s
-//
-	latchpics[0] = freelatch;
-	src = (byte _seg *)AM_GetGraphicsAsset(STARTTILE8);
-	destoff = freelatch;
-
-	for (i=0;i<NUMTILE8;i++)
-	{
-		VL_MemToLatch (src,8,8,destoff);
-		src += 64;
-		destoff +=16;
-	}
-
-#if 0	// ran out of latch space!
-//
-// tile 16s
-//
-	src = (byte _seg *)AM_GetGraphicsAsset(STARTTILE16);
-	latchpics[1] = destoff;
-
-	for (i=0;i<NUMTILE16;i++)
-	{
-		src = (byte _seg *)AM_GetGraphicsAsset(STARTTILE16+i);
-		VL_MemToLatch (src,16,16,destoff);
-		destoff+=64;
-		if (src)
-	}
-#endif
-
-//
-// pics
-//
-	start = LATCHPICS_LUMP_START;
-	end = LATCHPICS_LUMP_END;
-
-	for (i=start;i<=end;i++)
-	{
-		latchpics[2+i-start] = destoff;
-		width = pictable[i-STARTPICS].width;
-		height = pictable[i-STARTPICS].height;
-		VL_MemToLatch (AM_GetGraphicsAsset(i),width,height,destoff);
-		destoff += width/4 *height;
-	}
-
-	EGAMAPMASK(15);
-}
 
 //==========================================================================
 

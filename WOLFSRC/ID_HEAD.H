@@ -7,9 +7,6 @@
 #define	TEXTGR	0
 #define	CGAGR	1
 #define	EGAGR	2
-#define	VGAGR	3
-
-#define GRMODE	VGAGR
 
 #include "VERSION.H"
 

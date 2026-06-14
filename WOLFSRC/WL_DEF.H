@@ -96,9 +96,6 @@ int RandomByte(void);
 #define MINACTORDIST	0x10000l		// minimum dist from player center
 										// to any actor center
 
-#define NUMLATCHPICS	100
-
-
 #define PI	3.141592657
 
 #define GLOBAL1		(1l<<16)
@@ -826,7 +823,6 @@ void		ShutdownId (void);
 
 
 extern	boolean		ingame,fizzlein;
-extern	unsigned	latchpics[NUMLATCHPICS];
 extern	gametype	gamestate;
 extern	int			doornum;
 
@@ -917,11 +913,6 @@ extern	boolean		demorecord,demoplayback;
 extern	char		far *demoptr, far *lastdemoptr;
 extern	void*		demobuffer;
 
-
-
-void	InitRedShifts (void);
-void 	FinishPaletteShifts (void);
-
 void	CenterWindow(word w,word h);
 void 	InitActorList (void);
 void 	GetNewActor (void);
@@ -970,7 +961,6 @@ void PicturePause (void);
 */
 
 extern	unsigned screenloc[3];
-extern	unsigned freelatch;
 
 extern	long 	lasttimecount;
 extern	long 	frameon;

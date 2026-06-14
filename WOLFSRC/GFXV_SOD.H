@@ -237,10 +237,6 @@ typedef enum {
 #define COPYPROT_LUMP_START		95
 #define COPYPROT_LUMP_END		100
 
-#define LATCHPICS_LUMP_START		101
-#define LATCHPICS_LUMP_END		149
-
-
 //
 // Amount of each data item
 //

@@ -1,6 +1,7 @@
 // WL_PLAY.C
 
 #include "WL_DEF.H"
+#include "render.h"
 #pragma hdrstop
 
 
@@ -747,7 +748,7 @@ void CheckKeys (void)
 	if (Paused)
 	{
 		bufferofs = displayofs;
-		LatchDrawPic (20-4,80-2*8,PAUSEDPIC);
+		R_DrawPic(20-4,80-2*8,PAUSEDPIC); 
 		SD_MusicOff();
 		IN_Ack();
 		IN_ClearKeysDown ();
@@ -1045,70 +1046,6 @@ boolean	palshifted;
 
 extern 	byte	far	gamepal;
 
-/*
-=====================
-=
-= InitRedShifts
-=
-=====================
-*/
-
-void InitRedShifts (void)
-{
-	byte	far *workptr, far *baseptr;
-	int		i,j,delta;
-
-
-//
-// fade through intermediate frames
-//
-	for (i=1;i<=NUMREDSHIFTS;i++)
-	{
-		workptr = (byte far *)&redshifts[i-1][0];
-		baseptr = &gamepal;
-
-		for (j=0;j<=255;j++)
-		{
-			delta = 64-*baseptr;
-			*workptr++ = *baseptr++ + delta * i / REDSTEPS;
-			delta = -*baseptr;
-			*workptr++ = *baseptr++ + delta * i / REDSTEPS;
-			delta = -*baseptr;
-			*workptr++ = *baseptr++ + delta * i / REDSTEPS;
-		}
-	}
-
-	for (i=1;i<=NUMWHITESHIFTS;i++)
-	{
-		workptr = (byte far *)&whiteshifts[i-1][0];
-		baseptr = &gamepal;
-
-		for (j=0;j<=255;j++)
-		{
-			delta = 64-*baseptr;
-			*workptr++ = *baseptr++ + delta * i / WHITESTEPS;
-			delta = 62-*baseptr;
-			*workptr++ = *baseptr++ + delta * i / WHITESTEPS;
-			delta = 0-*baseptr;
-			*workptr++ = *baseptr++ + delta * i / WHITESTEPS;
-		}
-	}
-}
-
-
-/*
-=====================
-=
-= ClearPaletteShifts
-=
-=====================
-*/
-
-void ClearPaletteShifts (void)
-{
-	bonuscount = damagecount = 0;
-}
-
 
 /*
 =====================
@@ -1135,86 +1072,6 @@ void StartBonusFlash (void)
 void StartDamageFlash (int damage)
 {
 	damagecount += damage;
-}
-
-
-/*
-=====================
-=
-= UpdatePaletteShifts
-=
-=====================
-*/
-
-void UpdatePaletteShifts (void)
-{
-	int	red,white;
-
-	if (bonuscount)
-	{
-		white = bonuscount/WHITETICS +1;
-		if (white>NUMWHITESHIFTS)
-			white = NUMWHITESHIFTS;
-		bonuscount -= tics;
-		if (bonuscount < 0)
-			bonuscount = 0;
-	}
-	else
-		white = 0;
-
-
-	if (damagecount)
-	{
-		red = damagecount/10 +1;
-		if (red>NUMREDSHIFTS)
-			red = NUMREDSHIFTS;
-
-		damagecount -= tics;
-		if (damagecount < 0)
-			damagecount = 0;
-	}
-	else
-		red = 0;
-
-	if (red)
-	{
-		VW_WaitVBL(1);
-		VL_SetPalette (redshifts[red-1]);
-		palshifted = true;
-	}
-	else if (white)
-	{
-		VW_WaitVBL(1);
-		VL_SetPalette (whiteshifts[white-1]);
-		palshifted = true;
-	}
-	else if (palshifted)
-	{
-		VW_WaitVBL(1);
-		VL_SetPalette (&gamepal);		// back to normal
-		palshifted = false;
-	}
-}
-
-
-/*
-=====================
-=
-= FinishPaletteShifts
-=
-= Resets palette to normal if needed
-=
-=====================
-*/
-
-void FinishPaletteShifts (void)
-{
-	if (palshifted)
-	{
-		palshifted = 0;
-		VW_WaitVBL(1);
-		VL_SetPalette (&gamepal);
-	}
 }
 
 
@@ -1355,7 +1212,7 @@ void PlayLoop (void)
 	facecount = 0;
 	funnyticount = 0;
 	memset (buttonstate,0,sizeof(buttonstate));
-	ClearPaletteShifts ();
+	bonuscount = damagecount = 0;
 
 	if (MousePresent)
 		Mouse(MDelta);	// Clear accumulated mouse movement
@@ -1387,8 +1244,6 @@ void PlayLoop (void)
 		for (obj = player;obj;obj = obj->next)
 			DoActor (obj);
 
-		UpdatePaletteShifts ();
-
 		ThreeDRefresh ();
 
 		//
@@ -1419,11 +1274,8 @@ void PlayLoop (void)
 //
 		if (singlestep)
 		{
-			VW_WaitVBL(14);
 			lasttimecount = TimeCount;
 		}
-		if (extravbls)
-			VW_WaitVBL(extravbls);
 
 		if (demoplayback)
 		{
@@ -1443,8 +1295,5 @@ void PlayLoop (void)
 		}
 
 	}while (!playstate && !startgame);
-
-	if (playstate != ex_died)
-		FinishPaletteShifts ();
 }
 

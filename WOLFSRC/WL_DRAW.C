@@ -34,7 +34,6 @@ unsigned screenloc[3]= {0,0,0};
 #else
 unsigned screenloc[3]= {PAGE1START,PAGE2START,PAGE3START};
 #endif
-unsigned freelatch = FREESTART;
 
 long 	lasttimecount;
 long 	frameon;

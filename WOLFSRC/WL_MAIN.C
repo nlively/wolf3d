@@ -216,7 +216,7 @@ void DiskFlopAnim(int x,int y)
 	static char which=0;
 	if (!x && !y)
 		return;
-	VWB_DrawPic(x,y,C_DISKLOADING1PIC+which);
+	R_DrawPic(x,y,C_DISKLOADING1PIC+which);
 	VW_UpdateScreen();
 	which^=1;
 }
@@ -468,7 +468,6 @@ void ShutdownId (void)
 	US_Shutdown ();
 	SD_Shutdown ();
 	IN_Shutdown ();
-	VW_Shutdown ();
 }
 
 
@@ -634,16 +633,10 @@ void SignonScreen (void)                        // VGA version
 {
 	unsigned        segstart,seglength;
 
-	VL_SetVGAPlaneMode ();
-	VL_TestPaletteSet ();
-	VL_SetPalette (&gamepal);
-
 	if (!virtualreality)
 	{
-		VW_SetScreen(0x8000,0);
 		VL_MungePic (&introscn,320,200);
 		VL_MemToScreen (&introscn,320,200,0,0);
-		VW_SetScreen(0,0);
 	}
 }
 
@@ -694,9 +687,6 @@ void FinishSignon (void)
 	#endif
 
 	SETFONTCOLOR(0,15);
-#else
-	if (!NoWait)
-		VW_WaitVBL(3*70);
 #endif
 }
 
@@ -968,7 +958,7 @@ void DoJukebox(void)
 
 	fontnumber=1;
 	ClearMScreen ();
-	VWB_DrawPic(112,184,C_MOUSELBACKPIC);
+	R_DrawPic(112,184,C_MOUSELBACKPIC);
 	DrawStripes (10);
 	SETFONTCOLOR (TEXTCOLOR,BKGDCOLOR);
 
@@ -1038,7 +1028,6 @@ void InitGame (void)
 	// media assets for game
 	AM_SetupAssets();
 
-	VW_Startup ();
 	IN_Startup ();
 	SD_Startup ();
 	US_Startup ();
@@ -1087,7 +1076,6 @@ void InitGame (void)
 //
 // load in and lock down some basic chunks
 //
-	LoadLatchMem ();
 	BuildTables ();          // trig tables
 	SetupWalls ();
 
@@ -1109,7 +1097,6 @@ close(profilehandle);
 //
 // initialize variables
 //
-	InitRedShifts ();
 	if (!virtualreality)
 		FinishSignon();
 
@@ -1300,9 +1287,9 @@ void    DemoLoop (void)
 #ifndef DEMOTEST
 
 #ifdef SPEAR
-			VWB_DrawPic (0,0,TITLE1PIC);
+			R_DrawPic (0,0,TITLE1PIC);
 
-			VWB_DrawPic (0,80,TITLE2PIC);
+			R_DrawPic (0,80,TITLE2PIC);
 			VW_UpdateScreen ();
 			VL_FadeIn(0,255,AM_GetGraphicsAsset(TITLEPALETTE),30);
 #else

@@ -74,3 +74,16 @@ void R_Shutdown(void) {
     }
     SDL_Quit();
 }
+
+// TODO: update datatype of image_data
+void R_DrawImage(int x, int y, void* image_data) {
+
+}
+
+void R_DrawPic(int x, int y, int chunknum)
+{
+    // do we need to figure picnum in order to determine width and height?  
+    // probably not.  ideally we get that when we load the asset
+	// int	picnum = chunknum - STARTPICS;
+    R_DrawImage(x,y, AM_GetGraphicsAsset(chunknum));
+}

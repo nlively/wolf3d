@@ -3,6 +3,7 @@
 #include <time.h>
 #include "WL_DEF.H"
 #include "assets.h"
+#include "render.h"
 #pragma hdrstop
 
 
@@ -118,19 +119,15 @@ void Victory (void)
 	StartCPMusic (XTHEEND_MUS);
 
 	VWB_Bar(0,0,320,200,VIEWCOLOR);
-	VWB_DrawPic (124,44,BJCOLLAPSE1PIC);
+	R_DrawPic(124,44,BJCOLLAPSE1PIC);
 	VW_UpdateScreen ();
 	VW_FadeIn ();
-	VW_WaitVBL(2*70);
-	VWB_DrawPic (124,44,BJCOLLAPSE2PIC);
+	R_DrawPic(124,44,BJCOLLAPSE2PIC);
 	VW_UpdateScreen ();
-	VW_WaitVBL(105);
-	VWB_DrawPic (124,44,BJCOLLAPSE3PIC);
+	R_DrawPic(124,44,BJCOLLAPSE3PIC);
 	VW_UpdateScreen ();
-	VW_WaitVBL(105);
-	VWB_DrawPic (124,44,BJCOLLAPSE4PIC);
+	R_DrawPic(124,44,BJCOLLAPSE4PIC);
 	VW_UpdateScreen ();
-	VW_WaitVBL(3*70);
 
 	VL_FadeOut (0,255,0,17,17,5);
 #endif
@@ -145,7 +142,7 @@ void Victory (void)
 	VWB_Bar (0,0,320,200-STATUSLINES,127);
 #ifdef JAPAN
 #ifndef JAPDEMO
-	VWB_DrawPic(0,0,C_ENDRATIOSPIC);
+	R_DrawPic(0,0,C_ENDRATIOSPIC);
 #endif
 #else
 	Write(18,2,STR_YOUWIN);
@@ -167,7 +164,7 @@ void Victory (void)
 #endif
 
 #ifndef JAPDEMO
-	VWB_DrawPic (8,4,L_BJWINSPIC);
+	R_DrawPic(8,4,L_BJWINSPIC);
 #endif
 
 
@@ -200,15 +197,15 @@ void Victory (void)
 		min = sec = 99;
 
 	i = TIMEX*8+1;
-	VWB_DrawPic(i,TIMEY*8,L_NUM0PIC+(min/10));
+	R_DrawPic(i,TIMEY*8,L_NUM0PIC+(min/10));
 	i += 2*8;
-	VWB_DrawPic(i,TIMEY*8,L_NUM0PIC+(min%10));
+	R_DrawPic(i,TIMEY*8,L_NUM0PIC+(min%10));
 	i += 2*8;
 	Write(i/8,TIMEY,":");
 	i += 1*8;
-	VWB_DrawPic(i,TIMEY*8,L_NUM0PIC+(sec/10));
+	R_DrawPic(i,TIMEY*8,L_NUM0PIC+(sec/10));
 	i += 2*8;
-	VWB_DrawPic(i,TIMEY*8,L_NUM0PIC+(sec%10));
+	R_DrawPic(i,TIMEY*8,L_NUM0PIC+(sec%10));
 	VW_UpdateScreen ();
 
 	itoa(kr,tempstr,10);
@@ -232,7 +229,7 @@ void Victory (void)
 	//
 	if (gamestate.difficulty>=gd_medium)
 	{
-		VWB_DrawPic (30*8,TIMEY*8,C_TIMECODEPIC);
+		R_DrawPic (30*8,TIMEY*8,C_TIMECODEPIC);
 		fontnumber = 0;
 		fontcolor = READHCOLOR;
 		PrintX = 30*8-3;
@@ -289,7 +286,7 @@ void PG13 (void)
 	VW_FadeOut();
 	VWB_Bar(0,0,320,200,0x82);			// background
 
-	VWB_DrawPic (216,110,PG13PIC);
+	R_DrawPic(216,110,PG13PIC);
 	VW_UpdateScreen ();
 
 	VW_FadeIn();
@@ -332,28 +329,28 @@ void Write(int x,int y,char *string)
 	switch(string[i])
 	{
 	 case '!':
-	   VWB_DrawPic(nx,ny,L_EXPOINTPIC);
+	   R_DrawPic(nx,ny,L_EXPOINTPIC);
 	   nx+=8;
 	   continue;
 
 	 case '\'':
-	   VWB_DrawPic(nx,ny,L_APOSTROPHEPIC);
+	   R_DrawPic(nx,ny,L_APOSTROPHEPIC);
 	   nx+=8;
 	   continue;
 
 	 case ' ': break;
 	 case 0x3a:	// ':'
 
-	   VWB_DrawPic(nx,ny,L_COLONPIC);
+	   R_DrawPic(nx,ny,L_COLONPIC);
 	   nx+=8;
 	   continue;
 
 	 case '%':
-	   VWB_DrawPic(nx,ny,L_PERCENTPIC);
+	   R_DrawPic(nx,ny,L_PERCENTPIC);
 	   break;
 
 	 default:
-	   VWB_DrawPic(nx,ny,alpha[ch]);
+	   R_DrawPic(nx,ny,alpha[ch]);
 	}
 	nx+=16;
    }
@@ -372,7 +369,7 @@ void BJ_Breathe(void)
 	if (TimeCount>max)
 	{
 		which^=1;
-		VWB_DrawPic(0,16,pics[which]);
+		R_DrawPic(0,16,pics[which]);
 		VW_UpdateScreen();
 		TimeCount=0;
 		max=35;
@@ -539,9 +536,9 @@ void LevelCompleted (void)
 	IN_StartAck();
 
 #ifdef JAPAN
-	VWB_DrawPic(0,0,C_INTERMISSIONPIC);
+	R_DrawPic(0,0,C_INTERMISSIONPIC);
 #endif
-	VWB_DrawPic(0,16,L_GUYPIC);
+	R_DrawPic(0,16,L_GUYPIC);
 
 #ifndef SPEAR
 	if (mapon<8)
@@ -601,15 +598,15 @@ void LevelCompleted (void)
 	 #else
 	 i=26*8;
 	 #endif
-	 VWB_DrawPic(i,10*8,L_NUM0PIC+(min/10));
+	 R_DrawPic(i,10*8,L_NUM0PIC+(min/10));
 	 i+=2*8;
-	 VWB_DrawPic(i,10*8,L_NUM0PIC+(min%10));
+	 R_DrawPic(i,10*8,L_NUM0PIC+(min%10));
 	 i+=2*8;
 	 Write(i/8,10,":");
 	 i+=1*8;
-	 VWB_DrawPic(i,10*8,L_NUM0PIC+(sec/10));
+	 R_DrawPic(i,10*8,L_NUM0PIC+(sec/10));
 	 i+=2*8;
-	 VWB_DrawPic(i,10*8,L_NUM0PIC+(sec%10));
+	 R_DrawPic(i,10*8,L_NUM0PIC+(sec%10));
 
 	 VW_UpdateScreen ();
 	 VW_FadeIn ();
@@ -679,7 +676,6 @@ void LevelCompleted (void)
 	 }
 	 if (ratio==100)
 	 {
-	   VW_WaitVBL(VBLWAIT);
 	   SD_StopSound();
 	   bonus+=PERCENT100AMT;
 	   ltoa(bonus,tempstr,10);
@@ -691,7 +687,6 @@ void LevelCompleted (void)
 	 else
 	 if (!ratio)
 	 {
-	   VW_WaitVBL(VBLWAIT);
 	   SD_StopSound();
 	   SD_PlaySound(NOBONUSSND);
 	 }
@@ -724,7 +719,6 @@ void LevelCompleted (void)
 	 }
 	 if (ratio==100)
 	 {
-	   VW_WaitVBL(VBLWAIT);
 	   SD_StopSound();
 	   bonus+=PERCENT100AMT;
 	   ltoa(bonus,tempstr,10);
@@ -736,7 +730,6 @@ void LevelCompleted (void)
 	 else
 	 if (!ratio)
 	 {
-	   VW_WaitVBL(VBLWAIT);
 	   SD_StopSound();
 	   SD_PlaySound(NOBONUSSND);
 	 }
@@ -766,7 +759,6 @@ void LevelCompleted (void)
 	 }
 	 if (ratio==100)
 	 {
-	   VW_WaitVBL(VBLWAIT);
 	   SD_StopSound();
 	   bonus+=PERCENT100AMT;
 	   ltoa(bonus,tempstr,10);
@@ -778,7 +770,6 @@ void LevelCompleted (void)
 	 else
 	 if (!ratio)
 	 {
-	   VW_WaitVBL(VBLWAIT);
 	   SD_StopSound();
 	   SD_PlaySound(NOBONUSSND);
 	 }
@@ -963,7 +954,7 @@ void PreloadGraphics(void)
 
 	VWB_Bar (0,0,320,200-STATUSLINES,127);
 
-	LatchDrawPic (20-14,80-3*8,GETPSYCHEDPIC);
+	R_DrawPic(20-14,80-3*8,GETPSYCHEDPIC);
 
 	WindowX = 160-14*8;
 	WindowY = 80-3*8;
@@ -1004,13 +995,13 @@ void	DrawHighScores(void)
 	ClearMScreen();
 	DrawStripes(10);
 
-	VWB_DrawPic(48,0,HIGHSCORESPIC);
+	R_DrawPic(48,0,HIGHSCORESPIC);
 
-	VWB_DrawPic(4*8,68,C_NAMEPIC);
-	VWB_DrawPic(20*8,68,C_LEVELPIC);
-	VWB_DrawPic(28*8,68,C_SCOREPIC);
+	R_DrawPic(4*8,68,C_NAMEPIC);
+	R_DrawPic(20*8,68,C_LEVELPIC);
+	R_DrawPic(28*8,68,C_SCOREPIC);
 #ifndef UPLOAD
-//	VWB_DrawPic(35*8,68,C_CODEPIC);
+//	R_DrawPic(35*8,68,C_CODEPIC);
 #endif
 	fontnumber=0;
 
@@ -1018,7 +1009,7 @@ void	DrawHighScores(void)
 	ClearMScreen();
 	DrawStripes(10);
 
-	VWB_DrawPic (0,0,HIGHSCORESPIC);
+	R_DrawPic (0,0,HIGHSCORESPIC);
 
 	fontnumber = 1;
 #endif
@@ -1070,7 +1061,7 @@ void	DrawHighScores(void)
 
 #ifdef SPEAR
 		if (s->completed == 21)
-			VWB_DrawPic (PrintX+8,PrintY-1,C_WONSPEARPIC);
+			R_DrawPic(PrintX+8,PrintY-1,C_WONSPEARPIC);
 		else
 #endif
 		US_Print(buffer);
@@ -1418,7 +1409,7 @@ int  BackDoor(char *s)
 			SETFONTCOLOR(14,15);
 			fontnumber = 0;
 			PrintY = 175;
-			VWB_DrawPic (0,20*8,COPYPROTBOXPIC);
+			R_DrawPic(0,20*8,COPYPROTBOXPIC);
 			US_CPrint(GoodBoyStrs[i*2]);
 			US_CPrint(GoodBoyStrs[i*2+1]);
 			VW_UpdateScreen();
@@ -1464,9 +1455,9 @@ void CopyProtection(void)
 	{
 		fontnumber = 1;
 		SETFONTCOLOR(PRINTCOLOR-2,15);
-		VWB_DrawPic (0,0,C_BACKDROPPIC);
-		VWB_DrawPic (0,0,COPYPROTTOPPIC);
-		VWB_DrawPic (0,20*8,COPYPROTBOXPIC);
+		R_DrawPic(0,0,C_BACKDROPPIC);
+		R_DrawPic(0,0,COPYPROTTOPPIC);
+		R_DrawPic(0,20*8,COPYPROTBOXPIC);
 		WindowX = WindowY = 0;
 		WindowW = 320;
 		WindowH = 200;
@@ -1486,7 +1477,7 @@ void CopyProtection(void)
 				while (enemypicked[whichboss = RandomByte()&3]);
 				enemypicked[whichboss] = 1;
 				bossnum = bosses[whichboss];
-				VWB_DrawPic(128,60,bossnum);
+				R_DrawPic(128,60,bossnum);
 				fontnumber = 0;
 				PrintY = 130;
 				US_CPrint(STR_ENEMY1"\n");
@@ -1610,7 +1601,7 @@ void CopyProtection(void)
 			SETFONTCOLOR(14,15);
 			fontnumber = 0;
 			PrintY = 175;
-			VWB_DrawPic (0,20*8,COPYPROTBOXPIC);
+			R_DrawPic(0,20*8,COPYPROTBOXPIC);
 			US_CPrint(CopyProFailedStrs[whichline]);
 			US_CPrint(CopyProFailedStrs[whichline+1]);
 

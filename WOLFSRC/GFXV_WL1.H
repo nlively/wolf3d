@@ -166,10 +166,6 @@ typedef enum {
 #define LEVELEND_LUMP_START		48
 #define LEVELEND_LUMP_END		89
 
-#define LATCHPICS_LUMP_START		95
-#define LATCHPICS_LUMP_END		138
-
-
 //
 // Amount of each data item
 //

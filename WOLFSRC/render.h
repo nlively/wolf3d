@@ -23,5 +23,7 @@ const char* R_GetError();
 void R_Shutdown(void);
 void R_Present(void);
 void R_SetPalette(const uint8_t *vga_pal);
+void R_DrawPic(int x, int y, int chunknum);
+void R_DrawImage(int x, int y, void* image_data);
 
 #endif

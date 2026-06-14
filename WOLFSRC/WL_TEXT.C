@@ -2,6 +2,7 @@
 
 #include "WL_DEF.H"
 #include "assets.h"
+#include "render.h"
 #pragma	hdrstop
 
 /*
@@ -172,7 +173,7 @@ void	TimedPicCommand (void)
 //
 // draw pic
 //
-	VWB_DrawPic (picx&~7,picy,picnum);
+	R_DrawPic(picx&~7,picy,picnum);
 }
 
 
@@ -244,7 +245,7 @@ void HandleCommand (void)
 
 	case 'G':		// ^Gyyy,xxx,ppp draws graphic
 		ParsePicCommand ();
-		VWB_DrawPic (picx&~7,picy,picnum);
+		R_DrawPic(picx&~7,picy,picnum);
 		picwidth = pictable[picnum-STARTPICS].width;
 		picheight = pictable[picnum-STARTPICS].height;
 		//
@@ -423,10 +424,10 @@ void PageLayout (boolean shownumber)
 // clear the screen
 //
 	VWB_Bar (0,0,320,200,BACKCOLOR);
-	VWB_DrawPic (0,0,H_TOPWINDOWPIC);
-	VWB_DrawPic (0,8,H_LEFTWINDOWPIC);
-	VWB_DrawPic (312,8,H_RIGHTWINDOWPIC);
-	VWB_DrawPic (8,176,H_BOTTOMINFOPIC);
+	R_DrawPic(0,0,H_TOPWINDOWPIC);
+	R_DrawPic(0,8,H_LEFTWINDOWPIC);
+	R_DrawPic(312,8,H_RIGHTWINDOWPIC);
+	R_DrawPic(8,176,H_BOTTOMINFOPIC);
 
 
 	for (i=0;i<TEXTROWS;i++)

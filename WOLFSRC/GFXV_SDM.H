@@ -181,10 +181,6 @@ typedef enum {
 #define TITLESCREEN_LUMP_START		74
 #define TITLESCREEN_LUMP_END		75
 
-#define LATCHPICS_LUMP_START		79
-#define LATCHPICS_LUMP_END		127
-
-
 //
 // Amount of each data item
 //

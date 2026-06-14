@@ -57,8 +57,6 @@ extern	char		far signon;
 //-----------------
 
 
-#define GREXT	"VGA"
-
 //
 //	ID Engine
 //	Types.h - Generic types, #defines, etc.

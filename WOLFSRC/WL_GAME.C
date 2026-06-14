@@ -2,6 +2,7 @@
 
 #include "WL_DEF.H"
 #include "assets.h"
+#include "render.h"
 #pragma hdrstop
 
 #ifdef MYPROFILE
@@ -27,7 +28,6 @@
 */
 
 boolean		ingame,fizzlein;
-unsigned	latchpics[NUMLATCHPICS];
 gametype	gamestate;
 
 long		spearx,speary;
@@ -42,7 +42,6 @@ int ElevatorBackTo[]={1,1,7,3,5,3};
 void ScanInfoPlane (void);
 void SetupGameLevel (void);
 void DrawPlayScreen (void);
-void LoadLatchMem (void);
 void GameLoop (void);
 
 /*
@@ -863,7 +862,7 @@ void DrawPlayScreen (void)
 	{
 		bufferofs = screenloc[i];
 		DrawPlayBorder ();
-		VWB_DrawPic (0,200-STATUSLINES,STATUSBARPIC);
+		R_DrawPic(0,200-STATUSLINES,STATUSBARPIC);
 	}
 
 	bufferofs = temp;
@@ -1165,8 +1164,6 @@ void Died (void)
 //
 // fade to red
 //
-	FinishPaletteShifts ();
-
 	bufferofs += screenofs;
 	VW_Bar (0,0,viewwidth,viewheight,4);
 	IN_ClearKeysDown ();

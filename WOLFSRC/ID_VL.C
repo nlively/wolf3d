@@ -23,10 +23,6 @@ unsigned	ylookup[MAXSCANLINES];
 boolean		screenfaded;
 unsigned	bordercolor;
 
-boolean		fastpalette;				// if true, use outsb to set
-
-byte		far	palette1[256][3],far palette2[256][3];
-
 //===========================================================================
 
 //
@@ -34,246 +30,6 @@ byte		far	palette1[256][3],far palette2[256][3];
 // ported to C as part of the modernization so the port target is a single
 // language.
 //
-
-/*
-=======================
-=
-= VL_VideoID
-=
-= The original detected MDA/CGA/EGA/MCGA/VGA/Hercules cards via BIOS and
-= 6845 probes.  The modern target is always a VGA-equivalent framebuffer,
-= so just report VGA (5).
-=
-=======================
-*/
-
-int VL_VideoID (void)
-{
-	return 5;					// VGA
-}
-
-
-/*
-=======================
-=
-= VL_WaitVBL
-=
-= Wait for the vertical retrace (returns before the actual vertical sync)
-=
-=======================
-*/
-
-void VL_WaitVBL (int num)
-{
-	while (num--)
-	{
-	//
-	// wait for a display signal to make sure the raster isn't in the
-	// middle of a sync
-	//
-		while (inportb(STATUS_REGISTER_1) & 8)
-			;
-		while (!(inportb(STATUS_REGISTER_1) & 8))
-			;
-	}
-}
-
-
-/*
-=======================
-=
-= VL_SetCRTC
-=
-= Sets the CRTC start address (used for page flipping)
-=
-=======================
-*/
-
-void VL_SetCRTC (int crtc)
-{
-//
-// wait for a display signal to make sure the raster isn't in the middle
-// of a sync
-//
-	while (inportb(STATUS_REGISTER_1) & 1)
-		;
-
-	outportb (CRTC_INDEX,0x0c);				// start address high register
-	outportb (CRTC_INDEX+1,(crtc>>8)&0xff);
-	outportb (CRTC_INDEX,0x0d);				// start address low register
-	outportb (CRTC_INDEX+1,crtc&0xff);
-}
-
-
-/*
-=======================
-=
-= VL_SetScreen
-=
-= Sets the CRTC start address and horizontal pel panning
-=
-=======================
-*/
-
-void VL_SetScreen (int crtc, int pel)
-{
-//
-// wait for a display signal to make sure the raster isn't in the middle
-// of a sync
-//
-	while (inportb(STATUS_REGISTER_1) & 1)
-		;
-
-//
-// set CRTC start
-//
-	outportb (CRTC_INDEX,0x0c);				// start address high register
-	outportb (CRTC_INDEX+1,(crtc>>8)&0xff);
-	outportb (CRTC_INDEX,0x0d);				// start address low register
-	outportb (CRTC_INDEX+1,crtc&0xff);
-
-//
-// set horizontal panning
-//
-	inportb (STATUS_REGISTER_1);			// reset the attribute flip-flop
-	outportb (ATR_INDEX,ATR_PELPAN | 0x20);
-	outportb (ATR_INDEX,pel);				// pel pan value
-}
-
-//===========================================================================
-
-
-/*
-=======================
-=
-= VL_Startup
-=
-=======================
-*/
-
-#if 0
-void	VL_Startup (void)
-{
-	if ( !MS_CheckParm ("HIDDENCARD") && VL_VideoID () != 5)
-		MS_Quit ("You need a VGA graphics card to run this!");
-
-	asm	cld;				// all string instructions assume forward
-}
-
-#endif
-
-/*
-=======================
-=
-= VL_Startup	// WOLFENSTEIN HACK
-=
-=======================
-*/
-
-static	char *ParmStrings[] = {"HIDDENCARD",""};
-
-void	VL_Startup (void)
-{
-	int i,videocard;
-
-	asm	cld;
-
-	videocard = VL_VideoID ();
-	for (i = 1;i < _argc;i++)
-		if (US_CheckParm(_argv[i],ParmStrings) == 0)
-		{
-			videocard = 5;
-			break;
-		}
-
-	if (videocard != 5)
-Quit ("Improper video card!  If you really have a VGA card that I am not \n"
-	  "detecting, use the -HIDDENCARD command line parameter!");
-
-}
-
-
-
-/*
-=======================
-=
-= VL_Shutdown
-=
-=======================
-*/
-
-void	VL_Shutdown (void)
-{
-	VL_SetTextMode ();
-}
-
-
-/*
-=======================
-=
-= VL_SetVGAPlaneMode
-=
-=======================
-*/
-
-void	VL_SetVGAPlaneMode (void)
-{
-asm	mov	ax,0x13
-asm	int	0x10
-	VL_DePlaneVGA ();
-	VGAMAPMASK(15);
-	VL_SetLineWidth (40);
-}
-
-
-/*
-=======================
-=
-= VL_SetTextMode
-=
-=======================
-*/
-
-void	VL_SetTextMode (void)
-{
-asm	mov	ax,3
-asm	int	0x10
-}
-
-//===========================================================================
-
-/*
-=================
-=
-= VL_ClearVideo
-=
-= Fill the entire video buffer with a given color
-=
-=================
-*/
-
-void VL_ClearVideo (byte color)
-{
-asm	mov	dx,GC_INDEX
-asm	mov	al,GC_MODE
-asm	out	dx,al
-asm	inc	dx
-asm	in	al,dx
-asm	and	al,0xfc				// write mode 0 to store directly to video
-asm	out	dx,al
-
-asm	mov	dx,SC_INDEX
-asm	mov	ax,SC_MAPMASK+15*256
-asm	out	dx,ax				// write through all four planes
-
-asm	mov	ax,SCREENSEG
-asm	mov	es,ax
-asm	mov	al,[color]
-asm	mov	ah,al
-asm	mov	cx,0x8000			// 0x8000 words, clearing 8 video bytes/word
-asm	xor	di,di
-asm	rep	stosw
-}
 
 
 /*
@@ -284,58 +40,6 @@ asm	rep	stosw
 =============================================================================
 */
 
-
-/*
-=================
-=
-= VL_DePlaneVGA
-=
-=================
-*/
-
-void VL_DePlaneVGA (void)
-{
-
-//
-// change CPU addressing to non linear mode
-//
-
-//
-// turn off chain 4 and odd/even
-//
-	outportb (SC_INDEX,SC_MEMMODE);
-	outportb (SC_INDEX+1,(inportb(SC_INDEX+1)&~8)|4);
-
-	outportb (SC_INDEX,SC_MAPMASK);		// leave this set throughought
-
-//
-// turn off odd/even and set write mode 0
-//
-	outportb (GC_INDEX,GC_MODE);
-	outportb (GC_INDEX+1,inportb(GC_INDEX+1)&~0x13);
-
-//
-// turn off chain
-//
-	outportb (GC_INDEX,GC_MISCELLANEOUS);
-	outportb (GC_INDEX+1,inportb(GC_INDEX+1)&~2);
-
-//
-// clear the entire buffer space, because int 10h only did 16 k / plane
-//
-	VL_ClearVideo (0);
-
-//
-// change CRTC scanning from doubleword to byte mode, allowing >64k scans
-//
-	outportb (CRTC_INDEX,CRTC_UNDERLINE);
-	outportb (CRTC_INDEX+1,inportb(CRTC_INDEX+1)&~0x40);
-
-	outportb (CRTC_INDEX,CRTC_MODE);
-	outportb (CRTC_INDEX+1,inportb(CRTC_INDEX+1)|0x40);
-}
-
-//===========================================================================
 
 /*
 ====================
@@ -380,7 +84,6 @@ void VL_SetLineWidth (unsigned width)
 
 void VL_SetSplitScreen (int linenum)
 {
-	VL_WaitVBL (1);
 	linenum=linenum*2-1;
 	outportb (CRTC_INDEX,CRTC_LINECOMPARE);
 	outportb (CRTC_INDEX+1,linenum % 256);
@@ -401,29 +104,6 @@ void VL_SetSplitScreen (int linenum)
 =============================================================================
 */
 
-
-/*
-=================
-=
-= VL_FillPalette
-=
-=================
-*/
-
-void VL_FillPalette (int red, int green, int blue)
-{
-	int	i;
-
-	outportb (PEL_WRITE_ADR,0);
-	for (i=0;i<256;i++)
-	{
-		outportb (PEL_DATA,red);
-		outportb (PEL_DATA,green);
-		outportb (PEL_DATA,blue);
-	}
-}
-
-//===========================================================================
 
 /*
 =================
@@ -464,86 +144,6 @@ void VL_GetColor	(int color, int *red, int *green, int *blue)
 /*
 =================
 =
-= VL_SetPalette
-=
-= If fast palette setting has been tested for, it is used
-= (some cards don't like outsb palette setting)
-=
-=================
-*/
-
-void VL_SetPalette (byte far *palette)
-{
-	int	i;
-
-//	outportb (PEL_WRITE_ADR,0);
-//	for (i=0;i<768;i++)
-//		outportb(PEL_DATA,*palette++);
-
-	asm	mov	dx,PEL_WRITE_ADR
-	asm	mov	al,0
-	asm	out	dx,al
-	asm	mov	dx,PEL_DATA
-	asm	lds	si,[palette]
-
-	asm	test	[ss:fastpalette],1
-	asm	jz	slowset
-//
-// set palette fast for cards that can take it
-//
-	asm	mov	cx,768
-	asm	rep outsb
-	asm	jmp	done
-
-//
-// set palette slowly for some video cards
-//
-slowset:
-	asm	mov	cx,256
-setloop:
-	asm	lodsb
-	asm	out	dx,al
-	asm	lodsb
-	asm	out	dx,al
-	asm	lodsb
-	asm	out	dx,al
-	asm	loop	setloop
-
-done:
-	asm	mov	ax,ss
-	asm	mov	ds,ax
-
-}
-
-
-//===========================================================================
-
-/*
-=================
-=
-= VL_GetPalette
-=
-= This does not use the port string instructions,
-= due to some incompatabilities
-=
-=================
-*/
-
-void VL_GetPalette (byte far *palette)
-{
-	int	i;
-
-	outportb (PEL_READ_ADR,0);
-	for (i=0;i<768;i++)
-		*palette++ = inportb(PEL_DATA);
-}
-
-
-//===========================================================================
-
-/*
-=================
-=
 = VL_FadeOut
 =
 = Fades the current palette to the given color in the given number of steps
@@ -553,41 +153,7 @@ void VL_GetPalette (byte far *palette)
 
 void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
 {
-	int		i,j,orig,delta;
-	byte	far *origptr, far *newptr;
-
-	VL_WaitVBL(1);
-	VL_GetPalette (&palette1[0][0]);
-	_fmemcpy (palette2,palette1,768);
-
-//
-// fade through intermediate frames
-//
-	for (i=0;i<steps;i++)
-	{
-		origptr = &palette1[start][0];
-		newptr = &palette2[start][0];
-		for (j=start;j<=end;j++)
-		{
-			orig = *origptr++;
-			delta = red-orig;
-			*newptr++ = orig + delta * i / steps;
-			orig = *origptr++;
-			delta = green-orig;
-			*newptr++ = orig + delta * i / steps;
-			orig = *origptr++;
-			delta = blue-orig;
-			*newptr++ = orig + delta * i / steps;
-		}
-
-		VL_WaitVBL(1);
-		VL_SetPalette (&palette2[0][0]);
-	}
-
-//
-// final color
-//
-	VL_FillPalette (red,green,blue);
+	// TODO: implement fade-out to `red`,`green`,`blue` over `steps`
 
 	screenfaded = true;
 }
@@ -603,63 +169,13 @@ void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
 
 void VL_FadeIn (int start, int end, byte far *palette, int steps)
 {
-	int		i,j,delta;
+	// TODO: implement fade-in over `steps` 
 
-	VL_WaitVBL(1);
-	VL_GetPalette (&palette1[0][0]);
-	_fmemcpy (&palette2[0][0],&palette1[0][0],sizeof(palette1));
-
-	start *= 3;
-	end = end*3+2;
-
-//
-// fade through intermediate frames
-//
-	for (i=0;i<steps;i++)
-	{
-		for (j=start;j<=end;j++)
-		{
-			delta = palette[j]-palette1[0][j];
-			palette2[0][j] = palette1[0][j] + delta * i / steps;
-		}
-
-		VL_WaitVBL(1);
-		VL_SetPalette (&palette2[0][0]);
-	}
-
-//
-// final color
-//
-	VL_SetPalette (palette);
 	screenfaded = false;
 }
 
 
 
-/*
-=================
-=
-= VL_TestPaletteSet
-=
-= Sets the palette with outsb, then reads it in and compares
-= If it compares ok, fastpalette is set to true.
-=
-=================
-*/
-
-void VL_TestPaletteSet (void)
-{
-	int	i;
-
-	for (i=0;i<768;i++)
-		palette1[0][i] = i;
-
-	fastpalette = true;
-	VL_SetPalette (&palette1[0][0]);
-	VL_GetPalette (&palette2[0][0]);
-	if (_fmemcmp (&palette1[0][0],&palette2[0][0],768))
-		fastpalette = false;
-}
 
 
 /*
@@ -840,39 +356,6 @@ void VL_Bar (int x, int y, int width, int height, int color)
 ============================================================================
 */
 
-/*
-=================
-=
-= VL_MemToLatch
-=
-=================
-*/
-
-void VL_MemToLatch (byte far *source, int width, int height, unsigned dest)
-{
-	unsigned	count;
-	byte	plane,mask;
-
-	count = ((width+3)/4)*height;
-	mask = 1;
-	for (plane = 0; plane<4 ; plane++)
-	{
-		VGAMAPMASK(mask);
-		mask <<= 1;
-
-asm	mov	cx,count
-asm mov ax,SCREENSEG
-asm mov es,ax
-asm	mov	di,[dest]
-asm	lds	si,[source]
-asm	rep movsb
-asm mov	ax,ss
-asm	mov	ds,ax
-
-		source+= count;
-	}
-}
-
 
 //===========================================================================
 
@@ -948,51 +431,6 @@ void VL_MaskedToScreen (byte far *source, int width, int height, int x, int y)
 }
 
 //==========================================================================
-
-/*
-=================
-=
-= VL_LatchToScreen
-=
-=================
-*/
-
-void VL_LatchToScreen (unsigned source, int width, int height, int x, int y)
-{
-	VGAWRITEMODE(1);
-	VGAMAPMASK(15);
-
-asm	mov	di,[y]				// dest = bufferofs+ylookup[y]+(x>>2)
-asm	shl	di,1
-asm	mov	di,[WORD PTR ylookup+di]
-asm	add	di,[bufferofs]
-asm	mov	ax,[x]
-asm	shr	ax,2
-asm	add	di,ax
-
-asm	mov	si,[source]
-asm	mov	ax,[width]
-asm	mov	bx,[linewidth]
-asm	sub	bx,ax
-asm	mov	dx,[height]
-asm	mov	cx,SCREENSEG
-asm	mov	ds,cx
-asm	mov	es,cx
-
-drawline:
-asm	mov	cx,ax
-asm	rep movsb
-asm	add	di,bx
-asm	dec	dx
-asm	jnz	drawline
-
-asm	mov	ax,ss
-asm	mov	ds,ax
-
-	VGAWRITEMODE(0);
-}
-
-
 //===========================================================================
 
 /*
