@@ -159,11 +159,6 @@ void	TimedPicCommand (void)
 	ParseTimedCommand ();
 
 //
-// update the screen, and wait for time delay
-//
-	VW_UpdateScreen ();
-
-//
 // wait for time
 //
 	TimeCount = 0;
@@ -657,7 +652,6 @@ void ShowArticle (char far *article)
 			#else
 			PageLayout (true);
 			#endif
-			VW_UpdateScreen ();
 			if (firstpage)
 			{
 				VL_FadeIn(0,255,&gamepal,10);

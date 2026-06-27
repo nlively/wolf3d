@@ -217,11 +217,10 @@ void DiskFlopAnim(int x,int y)
 	if (!x && !y)
 		return;
 	R_DrawPic(x,y,C_DISKLOADING1PIC+which);
-	VW_UpdateScreen();
 	which^=1;
 }
 
-
+// modernized
 long DoChecksum(const void *source,size_t size,long checksum)
 {
 	unsigned i;
@@ -232,6 +231,7 @@ long DoChecksum(const void *source,size_t size,long checksum)
 	return checksum;
 }
 
+// modernized
 long fwrite_with_checksum( const void *ptr,
     size_t size,
     size_t count,
@@ -242,6 +242,7 @@ long fwrite_with_checksum( const void *ptr,
 	return DoChecksum(ptr, size, checksum);
 }
 
+// modernized
 long fread_with_checksum( const void *ptr,
     size_t size,
     size_t count,
@@ -977,7 +978,6 @@ void DoJukebox(void)
 	US_CPrint ("Robert's Jukebox");
 
 	SETFONTCOLOR (TEXTCOLOR,BKGDCOLOR);
-	VW_UpdateScreen();
 	MenuFadeIn();
 
 	do
@@ -991,7 +991,6 @@ void DoJukebox(void)
 			StartCPMusic(songs[start + which]);
 			MusicMenu[start+which].active = 2;
 			DrawMenu (&MusicItems,&MusicMenu[start]);
-			VW_UpdateScreen();
 			lastsong = which;
 		}
 	} while(which>=0);
@@ -1290,10 +1289,8 @@ void    DemoLoop (void)
 			R_DrawPic (0,0,TITLE1PIC);
 
 			R_DrawPic (0,80,TITLE2PIC);
-			VW_UpdateScreen ();
 			VL_FadeIn(0,255,AM_GetGraphicsAsset(TITLEPALETTE),30);
 #else
-			VW_UpdateScreen ();
 			VW_FadeIn();
 #endif
 			if (IN_UserInput(TickBase*15))
@@ -1302,7 +1299,6 @@ void    DemoLoop (void)
 //
 // credits page
 //
-			VW_UpdateScreen();
 			VW_FadeIn ();
 			if (IN_UserInput(TickBase*10))
 				break;
@@ -1311,7 +1307,6 @@ void    DemoLoop (void)
 // high scores
 //
 			DrawHighScores ();
-			VW_UpdateScreen ();
 			VW_FadeIn ();
 
 			if (IN_UserInput(TickBase*10))

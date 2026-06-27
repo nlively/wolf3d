@@ -62,7 +62,6 @@ extern	int	px,py;
 
 void VW_InitDoubleBuffer (void);
 int	 VW_MarkUpdateBlock (int x1, int y1, int x2, int y2);
-void VW_UpdateScreen (void);
 
 //
 // mode independant routines

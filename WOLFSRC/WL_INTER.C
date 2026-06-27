@@ -39,7 +39,6 @@ void ClearSplitVWB (void)
 
 void EndScreen (int palette, int screen)
 {
-	VW_UpdateScreen ();
 	VL_FadeIn(0,255,AM_GetGraphicsAsset(palette),30);
 	IN_ClearKeysDown ();
 	IN_Ack ();
@@ -51,7 +50,6 @@ void EndSpear(void)
 {
 	EndScreen (END1PALETTE, ENDSCREEN11PIC);
 
-	VW_UpdateScreen ();
 	VL_FadeIn(0,255,AM_GetGraphicsAsset(END3PALETTE),30);
 	fontnumber = 0;
 	fontcolor = 0xd0;
@@ -61,7 +59,6 @@ void EndSpear(void)
 	PrintY = 180;
 	US_CPrint (STR_ENDGAME1"\n");
 	US_CPrint (STR_ENDGAME2);
-	VW_UpdateScreen ();
 	IN_StartAck ();
 	TimeCount = 0;
 	while (!IN_CheckAck () && TimeCount < 700);
@@ -71,7 +68,6 @@ void EndSpear(void)
 	VWB_Bar(0,180,320,20,0);
 	US_CPrint (STR_ENDGAME3"\n");
 	US_CPrint (STR_ENDGAME4);
-	VW_UpdateScreen ();
 	IN_StartAck ();
 	TimeCount = 0;
 	while (!IN_CheckAck () && TimeCount < 700);
@@ -120,14 +116,10 @@ void Victory (void)
 
 	VWB_Bar(0,0,320,200,VIEWCOLOR);
 	R_DrawPic(124,44,BJCOLLAPSE1PIC);
-	VW_UpdateScreen ();
 	VW_FadeIn ();
 	R_DrawPic(124,44,BJCOLLAPSE2PIC);
-	VW_UpdateScreen ();
 	R_DrawPic(124,44,BJCOLLAPSE3PIC);
-	VW_UpdateScreen ();
 	R_DrawPic(124,44,BJCOLLAPSE4PIC);
-	VW_UpdateScreen ();
 
 	VL_FadeOut (0,255,0,17,17,5);
 #endif
@@ -206,7 +198,6 @@ void Victory (void)
 	R_DrawPic(i,TIMEY*8,L_NUM0PIC+(sec/10));
 	i += 2*8;
 	R_DrawPic(i,TIMEY*8,L_NUM0PIC+(sec%10));
-	VW_UpdateScreen ();
 
 	itoa(kr,tempstr,10);
 	x=RATIOX+24-strlen(tempstr)*2;
@@ -248,7 +239,6 @@ void Victory (void)
 
 	fontnumber = 1;
 
-	VW_UpdateScreen ();
 	VW_FadeIn ();
 
 	IN_Ack();
@@ -287,7 +277,6 @@ void PG13 (void)
 	VWB_Bar(0,0,320,200,0x82);			// background
 
 	R_DrawPic(216,110,PG13PIC);
-	VW_UpdateScreen ();
 
 	VW_FadeIn();
 	IN_UserInput(TickBase*7);
@@ -370,7 +359,6 @@ void BJ_Breathe(void)
 	{
 		which^=1;
 		R_DrawPic(0,16,pics[which]);
-		VW_UpdateScreen();
 		TimeCount=0;
 		max=35;
 	}
@@ -608,7 +596,6 @@ void LevelCompleted (void)
 	 i+=2*8;
 	 R_DrawPic(i,10*8,L_NUM0PIC+(sec%10));
 
-	 VW_UpdateScreen ();
 	 VW_FadeIn ();
 
 
@@ -637,14 +624,12 @@ void LevelCompleted (void)
 	   Write(x,7,tempstr);
 	   if (!(i%(PAR_AMOUNT/10)))
 		 SD_PlaySound(ENDBONUS1SND);
-	   VW_UpdateScreen();
 	   while(SD_SoundPlaying())
 		 BJ_Breathe();
 	   if (IN_CheckAck())
 		 goto done;
 	  }
 
-	  VW_UpdateScreen();
 	  SD_PlaySound(ENDBONUS2SND);
 	  while(SD_SoundPlaying())
 		BJ_Breathe();
@@ -667,7 +652,6 @@ void LevelCompleted (void)
 	  Write(x,14,tempstr);
 	  if (!(i%10))
 		SD_PlaySound(ENDBONUS1SND);
-	  VW_UpdateScreen ();
 	  while(SD_SoundPlaying())
 		BJ_Breathe();
 
@@ -681,7 +665,6 @@ void LevelCompleted (void)
 	   ltoa(bonus,tempstr,10);
 	   x=(RATIOXX-1)-strlen(tempstr)*2;
 	   Write(x,7,tempstr);
-	   VW_UpdateScreen();
 	   SD_PlaySound(PERCENT100SND);
 	 }
 	 else
@@ -693,7 +676,6 @@ void LevelCompleted (void)
 	 else
 	 SD_PlaySound(ENDBONUS2SND);
 
-	 VW_UpdateScreen();
 	 while(SD_SoundPlaying())
 	   BJ_Breathe();
 
@@ -709,7 +691,6 @@ void LevelCompleted (void)
 	  Write(x,16,tempstr);
 	  if (!(i%10))
 		SD_PlaySound(ENDBONUS1SND);
-	  VW_UpdateScreen ();
 	  while(SD_SoundPlaying())
 		BJ_Breathe();
 	  BJ_Breathe();
@@ -724,7 +705,6 @@ void LevelCompleted (void)
 	   ltoa(bonus,tempstr,10);
 	   x=(RATIOXX-1)-strlen(tempstr)*2;
 	   Write(x,7,tempstr);
-	   VW_UpdateScreen();
 	   SD_PlaySound(PERCENT100SND);
 	 }
 	 else
@@ -735,7 +715,6 @@ void LevelCompleted (void)
 	 }
 	 else
 	   SD_PlaySound(ENDBONUS2SND);
-	 VW_UpdateScreen();
 	 while(SD_SoundPlaying())
 	   BJ_Breathe();
 
@@ -751,7 +730,6 @@ void LevelCompleted (void)
 	  Write(x,18,tempstr);
 	  if (!(i%10))
 		SD_PlaySound(ENDBONUS1SND);
-	  VW_UpdateScreen ();
 	  while(SD_SoundPlaying())
 		BJ_Breathe();
 	  if (IN_CheckAck())
@@ -764,7 +742,6 @@ void LevelCompleted (void)
 	   ltoa(bonus,tempstr,10);
 	   x=(RATIOXX-1)-strlen(tempstr)*2;
 	   Write(x,7,tempstr);
-	   VW_UpdateScreen();
 	   SD_PlaySound(PERCENT100SND);
 	 }
 	 else
@@ -775,7 +752,6 @@ void LevelCompleted (void)
 	 }
 	 else
 	 SD_PlaySound(ENDBONUS2SND);
-	 VW_UpdateScreen();
 	 while(SD_SoundPlaying())
 	   BJ_Breathe();
 
@@ -846,15 +822,12 @@ void LevelCompleted (void)
 
 	  Write(10,16,"15000 bonus!");
 
-	  VW_UpdateScreen();
 	  VW_FadeIn();
 
 	  GivePoints(15000);
 	}
 
-
 	DrawScore();
-	VW_UpdateScreen();
 
 	TimeCount=0;
 	IN_StartAck();
@@ -937,7 +910,6 @@ boolean PreloadUpdate(unsigned current, unsigned total)
 	 VWB_Bar(WindowX + 5,WindowY + WindowH - 3,w-1,1,0x32);
 
 	}
-	VW_UpdateScreen();
 //	if (LastScan == sc_Escape)
 //	{
 //		IN_ClearKeysDown();
@@ -960,7 +932,6 @@ void PreloadGraphics(void)
 	WindowY = 80-3*8;
 	WindowW = 28*8;
 	WindowH = 48;
-	VW_UpdateScreen();
 	VW_FadeIn ();
 
 	PM_Preload (PreloadUpdate);
@@ -968,7 +939,6 @@ void PreloadGraphics(void)
 	VW_FadeOut ();
 
 	DrawPlayBorder ();
-	VW_UpdateScreen ();
 }
 
 
@@ -1113,8 +1083,6 @@ void	DrawHighScores(void)
 		#endif
 	}
 
-	VW_UpdateScreen ();
-
 #ifdef SPEAR
 	fontnumber = 0;
 #endif
@@ -1185,7 +1153,6 @@ void	CheckHighScore (long score,word other)
 		PrintX = 16;
 		fontnumber = 1;
 		VWB_Bar (PrintX-2,PrintY-2,145,15,0x9c);
-		VW_UpdateScreen ();
 		backcolor = 0x9c;
 		fontcolor = 15;
 		US_LineInput(PrintX,PrintY,Scores[n].name,nil,true,MaxHighName,130);
@@ -1241,7 +1208,6 @@ void NonShareware(void)
 	#endif
 	US_Print("        Id Software\n");
 
-	VW_UpdateScreen ();
 	VW_FadeIn();
 	IN_Ack();
 }
@@ -1412,7 +1378,6 @@ int  BackDoor(char *s)
 			R_DrawPic(0,20*8,COPYPROTBOXPIC);
 			US_CPrint(GoodBoyStrs[i*2]);
 			US_CPrint(GoodBoyStrs[i*2+1]);
-			VW_UpdateScreen();
 			return 1;
 		}
 
@@ -1483,7 +1448,6 @@ void CopyProtection(void)
 				US_CPrint(STR_ENEMY1"\n");
 				US_CPrint(STR_ENEMY2"\n\n");
 
-				VW_UpdateScreen();
 				VW_FadeIn();
 
 				PrintX = 100;
@@ -1518,7 +1482,6 @@ void CopyProtection(void)
 				_fstrcat(message,WordStr[whichword]);
 				_fstrcat(message,"\" "STR_MAN4);
 				US_CPrint(message);
-				VW_UpdateScreen();
 				VW_FadeIn();
 
 				PrintX = 146;
@@ -1544,7 +1507,6 @@ void CopyProtection(void)
 				PrintY += 25;
 				US_CPrint(MemberStr[whichmem*2]);
 				US_CPrint(MemberStr[whichmem*2+1]);
-				VW_UpdateScreen();
 				VW_FadeIn();
 
 				PrintX = 100;
@@ -1575,7 +1537,6 @@ void CopyProtection(void)
 				US_CPrint(MiscStr[whichone*3]);
 				US_CPrint(MiscStr[whichone*3+1]);
 				US_CPrint(MiscStr[whichone*3+2]);
-				VW_UpdateScreen();
 				VW_FadeIn();
 
 				PrintX = 146;
@@ -1605,7 +1566,6 @@ void CopyProtection(void)
 			US_CPrint(CopyProFailedStrs[whichline]);
 			US_CPrint(CopyProFailedStrs[whichline+1]);
 
-			VW_UpdateScreen();
 			SD_PlaySound(NOWAYSND);
 			IN_UserInput(TickBase*3);
 			VW_FadeOut();

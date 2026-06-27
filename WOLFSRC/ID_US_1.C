@@ -130,7 +130,6 @@ static	WindowRec	wr;
 	US_CenterWindow(30,3);
 	US_CPrint(s);
 	US_CPrint("(R)etry or (A)bort?");
-	VW_UpdateScreen();
 	IN_ClearKeysDown();
 
 asm	sti	// Let the keyboard interrupts come through
@@ -149,7 +148,6 @@ asm	sti	// Let the keyboard interrupts come through
 		case 'r':
 		case 'R':
 			US_ClearWindow();
-			VW_UpdateScreen();
 			US_RestoreWindow(&wr);
 			return(RETRY);
 			break;
@@ -749,7 +747,6 @@ US_LineInput(int x,int y,char *buf,char *def,boolean escok,
 		if (cursorvis)
 			USL_XORICursor(x,y,s,cursor);
 
-		VW_UpdateScreen();
 	}
 
 	if (cursorvis)
@@ -760,7 +757,6 @@ US_LineInput(int x,int y,char *buf,char *def,boolean escok,
 		py = y;
 		USL_DrawString(olds);
 	}
-	VW_UpdateScreen();
 
 	IN_ClearKeysDown();
 	return(result);

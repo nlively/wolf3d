@@ -151,7 +151,6 @@ SetSoundLoc(fixed gx,fixed gy)
 	US_PrintSigned(leftchannel);
 	US_Print(",");
 	US_PrintSigned(rightchannel);
-	VW_UpdateScreen();
 #endif
 }
 
@@ -927,7 +926,6 @@ void FinishDemoRecord (void)
 	CenterWindow(24,3);
 	PrintY+=6;
 	US_Print(" Demo number (0-9):");
-	VW_UpdateScreen();
 
 	if (US_LineInput (px,py,str,NULL,true,2,0))
 	{
@@ -962,7 +960,6 @@ void RecordDemo (void)
 	PrintY+=6;
 	fontnumber=0;
 	US_Print("  Demo which level(1-10):");
-	VW_UpdateScreen();
 	VW_FadeIn ();
 	esc = !US_LineInput (px,py,str,NULL,true,2,0);
 	if (esc)

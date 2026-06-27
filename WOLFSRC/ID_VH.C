@@ -333,55 +333,6 @@ void VWB_Vlin (int y1, int y2, int x, int color)
 		VW_Vlin(y1,y2,x,color);
 }
 
-/*
-=====================
-=
-= VH_UpdateScreen
-=
-= Copies all the dirty update tiles from the build buffer (bufferofs) to the
-= visible page (displayofs).  Originally hand-written in ID_VH_A.ASM; ported
-= to C as part of the modernization so the port target is a single language.
-=
-= Each update tile is 4 bytes wide (16 pixels across all four planes) and 16
-= scanlines tall, copied with a VGA latch copy (write mode 1).
-=
-=====================
-*/
-
-void VH_UpdateScreen (void)
-{
-	byte	*tiles = (byte *)update;
-	byte	far *src, far *dst;
-	int		tile,i;
-
-	for (tile = 0 ; tile < UPDATEWIDE*UPDATEHIGH ; tile++)
-	{
-		if (!(tiles[tile] & 1))
-			continue;
-
-		tiles[tile] = 0;
-		src = MK_FP(SCREENSEG,blockstarts[tile] + bufferofs);
-		dst = MK_FP(SCREENSEG,blockstarts[tile] + displayofs);
-
-		for (i = 0 ; i < 16 ; i++)
-		{
-			dst[0] = src[0];
-			dst[1] = src[1];
-			dst[2] = src[2];
-			dst[3] = src[3];
-			src += linewidth;
-			dst += linewidth;
-		}
-	}
-
-	VGAWRITEMODE(0);
-}
-
-
-void VW_UpdateScreen (void)
-{
-	VH_UpdateScreen ();
-}
 
 
 /*
@@ -392,10 +343,6 @@ void VW_UpdateScreen (void)
 =============================================================================
 */
 
-
-//==========================================================================
-
-//==========================================================================
 
 /*
 ===================
