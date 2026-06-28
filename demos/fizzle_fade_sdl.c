@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define SCREEN_W 320
 #define SCREEN_H 200
@@ -14,8 +15,8 @@ static uint32_t target[SCREEN_W * SCREEN_H];
 
 static uint32_t visible[SCREEN_W * SCREEN_H];
 
-static uint32_t lfsr = 1;
-
+// randomized array of pixel indexes, used for pseudorandom fade effects.
+// for performance, we'll build this once in main() and reuse it as needed.
 static uint32_t *pixels;
 
 
@@ -33,22 +34,6 @@ static void screen_paint(uint32_t *fb, uint32_t rgba) {
     }
 }
 
-// pseudorandom position generator
-static bool next_fizzle_pixel(int *x, int *y) {
-    uint32_t bit = 
-        ((lfsr >> 0) ^ 
-         (lfsr >> 1) ^ 
-         (lfsr >> 3) ^ 
-         (lfsr >> 12)) & 1;
-
-    lfsr = (lfsr >> 1) | (bit << 16);
-
-    *x = lfsr % SCREEN_W;
-    *y = (lfsr / SCREEN_W) % SCREEN_H;
-
-    return lfsr != 1;
-}
-
 void fizzle_fade(SDL_Renderer *renderer, SDL_Texture *texture) {
     
     bool running = true;
@@ -62,7 +47,6 @@ void fizzle_fade(SDL_Renderer *renderer, SDL_Texture *texture) {
 
         for (int i = 0; i < 1200 && reveal < SCREEN_W * SCREEN_H; i++) {
             uint32_t index = pixels[reveal++];
-            printf("reveal %ld, index %d\n", reveal, index);
             visible[index] = target[index];
         }
 
@@ -90,7 +74,10 @@ void shuffle(uint32_t *array, size_t count) {
     }
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
+    (void)argc;
+    (void)argv;
+
     pixels = malloc(SCREEN_W * SCREEN_H * sizeof(uint32_t));
     // create an array of all pixel indexes
     for (uint32_t i = 0; i< SCREEN_W * SCREEN_H; i++) {
@@ -121,10 +108,6 @@ int main(void) {
         SCREEN_W,
         SCREEN_H
     );
-
-    bool running = true;
-    SDL_Event event;
-    int frame = 0;
 
     shuffle(pixels, SCREEN_W * SCREEN_H);
 
