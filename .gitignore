@@ -1,3 +1,5 @@
 assets/
 demos/fizzle_fade_sdl
 demos/framebuffer_sdl
+
+.claude/
