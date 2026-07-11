@@ -2,6 +2,8 @@
 
 #include "ID_HEADS.H"
 #include "assets.h"
+#include "render.h"
+#include <SDL2/SDL.h>
 
 #define	SCREENWIDTH		80
 #define CHARWIDTH		2
@@ -294,80 +296,69 @@ void VWB_Vlin (int y1, int y2, int x, int color)
 
 extern	ControlInfo	c;
 
+static void ShufflePixels (unsigned *pixels, unsigned count) {
+	unsigned i, j, tmp;
+
+	// loop through every array element (pixel) and swap it with a random one.
+	for (i = count-1; i > 0; i--) {
+		j = rand() % (i+1);
+		tmp = pixels[i];
+		pixels[i] = pixels[j];
+		pixels[j] = tmp;
+	}
+}
+
 boolean FizzleFade (unsigned source, unsigned dest,
 	unsigned width,unsigned height, unsigned frames, boolean abortable)
 {
-	int			pixperframe;
-	unsigned	drawofs,pagedelta;
-	byte 		mask,maskb[8] = {1,2,4,8};
-	unsigned	x,y,p,frame;
-	long		rndval;
+	static unsigned *order = NULL;
+	static unsigned ordercount = 0;
+	unsigned pixcount, pixperframe, reveal, goal, tics;
+	uint32_t starttime;
+	static uint8_t target[SCREEN_W * SCREEN_H];
+	unsigned x0, y0;
 
-	pagedelta = dest-source;
-	rndval = 1;
-	y = 0;
-	pixperframe = 64000/frames;
+	R_CaptureBackbuffer(target); // remember the frame we're fading TO
+	R_RestoreShown(); // put the frame we're fading FROM back on the canvas
+	
+	x0 = dest % SCREEN_W; // dest (displayofs+screenofs) is a pixel offset in the port,
+	y0 = dest / SCREEN_W; // so it directly encodes the region origin; source is unused
 
-	IN_StartAck ();
+	pixcount = width*height;
+	pixperframe = pixcount/frames + 1; //frames is still in 70hz tics
 
-	TimeCount=frame=0;
-	do	// while (1)
-	{
-		if (abortable && IN_CheckAck () )
-			return true;
+	if (ordercount != pixcount) { // rebuild only when the region size changes
+		free(order);
+		order = malloc(pixcount * sizeof(unsigned));
+		ordercount = pixcount;
+	}
+	for (int i = 0; i < pixcount; i++) 
+		order[i] = i;
+	
+	ShufflePixels(order, pixcount);
 
-		asm	mov	es,[screenseg]
+	IN_StartAck(); 
 
-		for (p=0;p<pixperframe;p++)
-		{
-			//
-			// seperate random value into x/y pair
-			//
-			asm	mov	ax,[WORD PTR rndval]
-			asm	mov	dx,[WORD PTR rndval+2]
-			asm	mov	bx,ax
-			asm	dec	bl
-			asm	mov	[BYTE PTR y],bl			// low 8 bits - 1 = y xoordinate
-			asm	mov	bx,ax
-			asm	mov	cx,dx
-			asm	mov	[BYTE PTR x],ah			// next 9 bits = x xoordinate
-			asm	mov	[BYTE PTR x+1],dl
-			//
-			// advance to next random element
-			//
-			asm	shr	dx,1
-			asm	rcr	ax,1
-			asm	jnc	noxor
-			asm	xor	dx,0x0001
-			asm	xor	ax,0x2000
-noxor:
-			asm	mov	[WORD PTR rndval],ax
-			asm	mov	[WORD PTR rndval+2],dx
+	reveal = 0;
+	starttime = SDL_GetTicks();
+	do {
+		if (abortable && IN_CheckAck()) return true;
 
-			if (x>width || y>height)
-				continue;
-			drawofs = source+ylookup[y] + (x>>2);
-
-			//
-			// copy one pixel
-			//
-			mask = x&3;
-			VGAREADMAP(mask);
-			mask = maskb[mask];
-			VGAMAPMASK(mask);
-
-			asm	mov	di,[drawofs]
-			asm	mov	al,[es:di]
-			asm add	di,[pagedelta]
-			asm	mov	[es:di],al
-
-			if (rndval == 1)		// entire sequence has been completed
-				return false;
+		// reveal as many pixels as the 70hz tic clock says we're due
+		tics = (SDL_GetTicks() - starttime) * 70/1000 + 1;
+		goal = tics * pixperframe;
+		if (goal > pixcount)
+			goal = pixcount;
+		
+		while (reveal < goal) {
+			int i = order[reveal++];
+			int x = x0 + i % width;
+			int y = y0 + i / width;
+			R_PutPixel(x, y, target[y * SCREEN_W + x]);
 		}
-		frame++;
-		while (TimeCount<frame)		// don't go too fast
-		;
-	} while (1);
 
+		R_Present();
+	} while(reveal < pixcount);
 
+	return false;
 }
