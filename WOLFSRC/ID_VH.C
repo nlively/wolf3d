@@ -232,72 +232,15 @@ void	VW_MeasureMPropString  (char far *string, word *width, word *height)
 */
 
 
-/*
-=======================
-=
-= VW_MarkUpdateBlock
-=
-= Takes a pixel bounded block and marks the tiles in bufferblocks
-= Returns 0 if the entire block is off the buffer screen
-=
-=======================
-*/
-
-int VW_MarkUpdateBlock (int x1, int y1, int x2, int y2)
-{
-	int	x,y,xt1,yt1,xt2,yt2,nextline;
-	byte *mark;
-
-	xt1 = x1>>PIXTOBLOCK;
-	yt1 = y1>>PIXTOBLOCK;
-
-	xt2 = x2>>PIXTOBLOCK;
-	yt2 = y2>>PIXTOBLOCK;
-
-	if (xt1<0)
-		xt1=0;
-	else if (xt1>=UPDATEWIDE)
-		return 0;
-
-	if (yt1<0)
-		yt1=0;
-	else if (yt1>UPDATEHIGH)
-		return 0;
-
-	if (xt2<0)
-		return 0;
-	else if (xt2>=UPDATEWIDE)
-		xt2 = UPDATEWIDE-1;
-
-	if (yt2<0)
-		return 0;
-	else if (yt2>=UPDATEHIGH)
-		yt2 = UPDATEHIGH-1;
-
-	mark = updateptr + uwidthtable[yt1] + xt1;
-	nextline = UPDATEWIDE - (xt2-xt1) - 1;
-
-	for (y=yt1;y<=yt2;y++)
-	{
-		for (x=xt1;x<=xt2;x++)
-			*mark++ = 1;			// this tile will need to be updated
-
-		mark += nextline;
-	}
-
-	return 1;
-}
 
 void VWB_DrawTile8 (int x, int y, int tile)
 {
-	if (VW_MarkUpdateBlock (x,y,x+7,y+7))
-		LatchDrawChar(x,y,tile);
+	LatchDrawChar(x,y,tile);
 }
 
 void VWB_DrawTile8M (int x, int y, int tile)
 {
-	if (VW_MarkUpdateBlock (x,y,x+7,y+7))
-		VL_MemToScreen (((byte far *)AM_GetGraphicsAsset(STARTTILE8M))+tile*64,8,8,x,y);
+	VL_MemToScreen (((byte far *)AM_GetGraphicsAsset(STARTTILE8M))+tile*64,8,8,x,y);
 }
 
 void VWB_DrawPropString	 (char far *string)
@@ -305,32 +248,27 @@ void VWB_DrawPropString	 (char far *string)
 	int x;
 	x=px;
 	VW_DrawPropString (string);
-	VW_MarkUpdateBlock(x,py,px-1,py+bufferheight-1);
 }
 
 
 void VWB_Bar (int x, int y, int width, int height, int color)
 {
-	if (VW_MarkUpdateBlock (x,y,x+width,y+height-1) )
-		VW_Bar (x,y,width,height,color);
+	VW_Bar (x,y,width,height,color);
 }
 
 void VWB_Plot (int x, int y, int color)
 {
-	if (VW_MarkUpdateBlock (x,y,x,y))
-		VW_Plot(x,y,color);
+	VW_Plot(x,y,color);
 }
 
 void VWB_Hlin (int x1, int x2, int y, int color)
 {
-	if (VW_MarkUpdateBlock (x1,y,x2,y))
-		VW_Hlin(x1,x2,y,color);
+	VW_Hlin(x1,x2,y,color);
 }
 
 void VWB_Vlin (int y1, int y2, int x, int color)
 {
-	if (VW_MarkUpdateBlock (x,y1,x,y2))
-		VW_Vlin(y1,y2,x,color);
+	VW_Vlin(y1,y2,x,color);
 }
 
 
