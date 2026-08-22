@@ -84,14 +84,13 @@ extern byte far gamepal;
 
 void VH_SetDefaultColors (void);
 
-#define VW_Bar			VL_Bar
 #define VW_Plot			VL_Plot
 #define VW_Hlin(x,z,y,c)	VL_Hlin(x,y,(z)-(x)+1,c)
 #define VW_Vlin(y,z,x,c)	VL_Vlin(x,y,(z)-(y)+1,c)
 #define VW_SetSplitScreen	VL_SetSplitScreen
 #define VW_SetLineWidth		VL_SetLineWidth
 #define VW_ColorBorder	VL_ColorBorder
-#define VW_FadeIn()		VL_FadeIn(0,255,&gamepal,30);
+#define VW_FadeIn()		VL_FadeIn(0,255,30);
 #define VW_FadeOut()	VL_FadeOut(0,255,0,0,0,30);
 #define VW_ScreenToScreen	VL_ScreenToScreen
 #define VW_SetDefaultColors	VH_SetDefaultColors

@@ -654,7 +654,7 @@ void ShowArticle (char far *article)
 			#endif
 			if (firstpage)
 			{
-				VL_FadeIn(0,255,&gamepal,10);
+				VL_FadeIn(0,255,10);
 				// VW_FadeIn ()
 				firstpage = false;
 			}

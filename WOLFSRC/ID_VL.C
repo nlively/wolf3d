@@ -142,7 +142,7 @@ void VL_GetColor	(int color, int *red, int *green, int *blue)
 /*
 =================
 =
-= VL_FadeOut
+= VL_FadeOut ✅
 =
 = Fades the current palette to the given color in the given number of steps
 =
@@ -151,25 +151,37 @@ void VL_GetColor	(int color, int *red, int *green, int *blue)
 
 void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
 {
-	// TODO: implement fade-out to `red`,`green`,`blue` over `steps`
+	int from = R_GetFadeLevel();
+	
+	R_SetFadeOutColor(red, green, blue);
 
-	screenfaded = true;
+	for (int i = 0; i < steps; i++) {
+		if (R_IsScreenFadedOut()) break;
+
+		R_SetFadeLevel(from + (FADED_OUT - from) * i / steps);
+		R_Present();
+	}
 }
 
 
 /*
 =================
 =
-= VL_FadeIn
+= VL_FadeIn ✅
 =
 =================
 */
 
-void VL_FadeIn (int start, int end, byte far *palette, int steps)
+void VL_FadeIn (int start, int end, int steps)
 {
-	// TODO: implement fade-in over `steps` 
+	int from = R_GetFadeLevel();
 
-	screenfaded = false;
+	for (int i = 0; i < steps; i++) {
+		if (R_IsScreenFadedIn()) break;
+
+		R_SetFadeLevel(from - (FADED_IN - from) * i / steps);
+		R_Present();
+	}
 }
 
 
@@ -203,10 +215,6 @@ void VL_ColorBorder (int color)
 =============================================================================
 */
 
-byte	pixmasks[4] = {1,2,4,8};
-byte	leftmasks[4] = {15,14,12,8};
-byte	rightmasks[4] = {1,3,7,15};
-
 
 /*
 =================
@@ -215,10 +223,10 @@ byte	rightmasks[4] = {1,3,7,15};
 =
 =================
 */
-/// ✅
 void VL_Plot (int x, int y, int color)
 {
-	R_PutPixel(x, y, color);
+	// color is a legacy palette index; R_MapColor resolves it to ARGB.
+	R_PutPixel(x, y, R_MapColor(color));
 }
 
 
@@ -232,38 +240,8 @@ void VL_Plot (int x, int y, int color)
 
 void VL_Hlin (unsigned x, unsigned y, unsigned width, unsigned color)
 {
-	unsigned		xbyte;
-	byte			far *dest;
-	byte			leftmask,rightmask;
-	int				midbytes;
-
-	xbyte = x>>2;
-	leftmask = leftmasks[x&3];
-	rightmask = rightmasks[(x+width-1)&3];
-	midbytes = ((x+width+3)>>2) - xbyte - 2;
-
-	dest = MK_FP(SCREENSEG,bufferofs+ylookup[y]+xbyte);
-
-	if (midbytes<0)
-	{
-	// all in one byte
-		VGAMAPMASK(leftmask&rightmask);
-		*dest = color;
-		VGAMAPMASK(15);
-		return;
-	}
-
-	VGAMAPMASK(leftmask);
-	*dest++ = color;
-
-	VGAMAPMASK(15);
-	_fmemset (dest,color,midbytes);
-	dest+=midbytes;
-
-	VGAMAPMASK(rightmask);
-	*dest = color;
-
-	VGAMAPMASK(15);
+	// A horizontal line is a width x 1 filled rectangle.
+	R_FillRect(x, y, width, 1, R_MapColor(color));
 }
 
 
@@ -277,73 +255,8 @@ void VL_Hlin (unsigned x, unsigned y, unsigned width, unsigned color)
 
 void VL_Vlin (int x, int y, int height, int color)
 {
-	byte	far *dest,mask;
-
-	mask = pixmasks[x&3];
-	VGAMAPMASK(mask);
-
-	dest = MK_FP(SCREENSEG,bufferofs+ylookup[y]+(x>>2));
-
-	while (height--)
-	{
-		*dest = color;
-		dest += linewidth;
-	}
-
-	VGAMAPMASK(15);
-}
-
-
-/*
-=================
-=
-= VL_Bar
-=
-=================
-*/
-
-void VL_Bar (int x, int y, int width, int height, int color)
-{
-	byte	far *dest;
-	byte	leftmask,rightmask;
-	int		midbytes,linedelta;
-
-	leftmask = leftmasks[x&3];
-	rightmask = rightmasks[(x+width-1)&3];
-	midbytes = ((x+width+3)>>2) - (x>>2) - 2;
-	linedelta = linewidth-(midbytes+1);
-
-	dest = MK_FP(SCREENSEG,bufferofs+ylookup[y]+(x>>2));
-
-	if (midbytes<0)
-	{
-	// all in one byte
-		VGAMAPMASK(leftmask&rightmask);
-		while (height--)
-		{
-			*dest = color;
-			dest += linewidth;
-		}
-		VGAMAPMASK(15);
-		return;
-	}
-
-	while (height--)
-	{
-		VGAMAPMASK(leftmask);
-		*dest++ = color;
-
-		VGAMAPMASK(15);
-		_fmemset (dest,color,midbytes);
-		dest+=midbytes;
-
-		VGAMAPMASK(rightmask);
-		*dest = color;
-
-		dest+=linedelta;
-	}
-
-	VGAMAPMASK(15);
+	// A vertical line is a 1 x height filled rectangle.
+	R_FillRect(x, y, 1, height, R_MapColor(color));
 }
 
 /*

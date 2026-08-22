@@ -654,7 +654,7 @@ void FinishSignon (void)
 {
 
 #ifndef SPEAR
-	VW_Bar (0,189,300,11,peekb(0xa000,0));
+	R_FillRect (0,189,300,11,R_GetPixel(0,0));	// clear strip to the signon bg color
 	WindowX = 0;
 	WindowW = 320;
 	PrintY = 190;
@@ -674,7 +674,7 @@ void FinishSignon (void)
 		IN_Ack ();
 
 	#ifndef JAPAN
-	VW_Bar (0,189,300,11,peekb(0xa000,0));
+	R_FillRect (0,189,300,11,R_GetPixel(0,0));	// clear strip to the signon bg color
 
 	PrintY = 190;
 	SETFONTCOLOR(10,4);
@@ -1289,7 +1289,7 @@ void    DemoLoop (void)
 			R_DrawPic (0,0,TITLE1PIC);
 
 			R_DrawPic (0,80,TITLE2PIC);
-			VL_FadeIn(0,255,AM_GetGraphicsAsset(TITLEPALETTE),30);
+			VL_FadeIn(0,255,30);
 #else
 			VW_FadeIn();
 #endif

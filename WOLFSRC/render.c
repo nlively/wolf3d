@@ -4,11 +4,12 @@
 */
 
 #include "render.h"
+#include "assert.h"
 #include <SDL2/SDL.h>
 
 typedef struct {
-    uint8_t framebuffer[SCREEN_W * SCREEN_H]; // back buffer: all drawing goes here
-    uint8_t shown[SCREEN_W * SCREEN_H]; // last frame actually presented
+    uint32_t framebuffer[SCREEN_W * SCREEN_H]; // back buffer: all drawing goes here
+    uint32_t shown[SCREEN_W * SCREEN_H]; // last frame actually presented
     uint32_t palette[256]; // RGBA, set from VGA palette
 
     struct SDL_Window *window;
@@ -16,6 +17,7 @@ typedef struct {
     struct SDL_Texture *texture;
 } VideoContext;
 
+static int fade_level = FADED_IN;
 static VideoContext vid; // global instance, but not addressable outside this file
 
 int R_Startup(const char *title, int scale) {
@@ -64,7 +66,7 @@ void R_Present(void) {
     uint32_t *out = pixels;
 
     for (int i = 0; i < SCREEN_W * SCREEN_H; i++) {
-        out[i] = vid.palette[vid.framebuffer[i]];
+        out[i] = vid.framebuffer[i];
     }
     SDL_UnlockTexture(vid.texture);
     SDL_RenderClear(vid.renderer);
@@ -100,20 +102,82 @@ void R_DrawPic(int x, int y, int chunknum)
     R_DrawImage(x,y, AM_GetGraphicsAsset(chunknum));
 }
 
-void R_PutPixel(int x, int y, uint8_t color) {
+void R_PutPixel(int x, int y, uint32_t color) {
     assert(x >= 0 && x < SCREEN_W && y >= 0 && y < SCREEN_H); // bounds check
-    
+
     vid.framebuffer[y * SCREEN_W + x] = color;
 }
 
-void R_DrawColumn(int x, int y_top, int y_bottom, const uint8_t *texels) {
+// Read the packed ARGB color already in the framebuffer at (x,y). Replaces
+// the old peekb(0xa000,...) trick of sampling a color straight off screen.
+uint32_t R_GetPixel(int x, int y) {
+    assert(x >= 0 && x < SCREEN_W && y >= 0 && y < SCREEN_H); // bounds check
+
+    return vid.framebuffer[y * SCREEN_W + x];
+}
+
+// Resolve a legacy palette index to a packed ARGB color. This is the only
+// surviving use of the palette in the running game: engine code that still
+// names colors by index (VL_Bar, fonts, ...) funnels through here.
+uint32_t R_MapColor(uint8_t index) {
+    return vid.palette[index];
+}
+
+// Fill an axis-aligned rectangle with a packed ARGB color. Clamped to screen.
+// VL_Bar/Plot/Hlin/Vlin all reduce to this.
+void R_FillRect(int x, int y, int w, int h, uint32_t color) {
+    if (x < 0) { w += x; x = 0; }
+    if (y < 0) { h += y; y = 0; }
+    if (x + w > SCREEN_W) w = SCREEN_W - x;
+    if (y + h > SCREEN_H) h = SCREEN_H - y;
+
+    for (int row = y; row < y + h; row++)
+        for (int col = x; col < x + w; col++)
+            vid.framebuffer[row * SCREEN_W + col] = color;
+}
+
+// Build the index->ARGB table from a 768-byte VGA palette (256 * RGB, each
+// channel 6-bit / 0..63). Uses exact 6->8 bit scaling so white hits 255.
+void R_SetPalette(const uint8_t *vga_pal) {
+    for (int i = 0; i < 256; i++) {
+        uint32_t r = (vga_pal[i*3+0] * 255) / 63;
+        uint32_t g = (vga_pal[i*3+1] * 255) / 63;
+        uint32_t b = (vga_pal[i*3+2] * 255) / 63;
+        vid.palette[i] = 0xFF000000u | (r << 16) | (g << 8) | b; // ARGB8888
+    }
+}
+
+void R_DrawColumn(int x, int y_top, int y_bottom, const uint32_t *texels) {
     // TODO: implement this later, call from WL_DRAW.C
 }
 
-void R_CaptureBackbuffer(uint8_t *dst) {
+void R_CaptureBackbuffer(uint32_t *dst) {
     memcpy(dst, vid.framebuffer, sizeof vid.framebuffer);
 }
 
 void R_RestoreShown(void) {
     memcpy(vid.framebuffer, vid.shown, sizeof vid.framebuffer);
+}
+
+bool R_IsScreenFadedOut(void) {
+    return R_GetFadeLevel() == FADED_OUT;
+}
+
+bool R_IsScreenFadedIn(void) {
+    return R_GetFadeLevel() == FADED_IN;
+}
+
+int R_GetFadeLevel(void) {
+    return fade_level;
+}
+void R_SetFadeLevel(int level) {
+    fade_level = level;
+}
+void R_IncreaseFade(int amount) {
+    fade_level -= amount;
+    if (fade_level < FADED_OUT) fade_level = FADED_OUT;
+}
+void R_DecreaseFade(int amount) {
+    fade_level += amount;
+    if (fade_level > FADED_IN) fade_level = FADED_IN;
 }

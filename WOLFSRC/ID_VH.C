@@ -255,7 +255,10 @@ void VWB_DrawPropString	 (char far *string)
 
 void VWB_Bar (int x, int y, int width, int height, int color)
 {
-	VW_Bar (x,y,width,height,color);
+	// A bar is just a filled rectangle. The color arg is a legacy palette
+	// index; R_MapColor resolves it to ARGB. Same template as VWB_Plot (1x1),
+	// VWB_Hlin (Nx1), and VWB_Vlin (1xN).
+	R_FillRect(x, y, width, height, R_MapColor(color));
 }
 
 void VWB_Plot (int x, int y, int color)

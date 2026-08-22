@@ -1162,7 +1162,7 @@ void Died (void)
 // fade to red
 //
 	bufferofs += screenofs;
-	VW_Bar (0,0,viewwidth,viewheight,4);
+	VWB_Bar (0,0,viewwidth,viewheight,4);
 	IN_ClearKeysDown ();
 	FizzleFade(bufferofs,displayofs+screenofs,viewwidth,viewheight,70,false);
 	bufferofs -= screenofs;

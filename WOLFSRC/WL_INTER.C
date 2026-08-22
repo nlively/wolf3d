@@ -39,7 +39,7 @@ void ClearSplitVWB (void)
 
 void EndScreen (int palette, int screen)
 {
-	VL_FadeIn(0,255,AM_GetGraphicsAsset(palette),30);
+	VL_FadeIn(0,255,30);
 	IN_ClearKeysDown ();
 	IN_Ack ();
 	VW_FadeOut ();
@@ -50,7 +50,7 @@ void EndSpear(void)
 {
 	EndScreen (END1PALETTE, ENDSCREEN11PIC);
 
-	VL_FadeIn(0,255,AM_GetGraphicsAsset(END3PALETTE),30);
+	VL_FadeIn(0,255,30);
 	fontnumber = 0;
 	fontcolor = 0xd0;
 	WindowX = 0;

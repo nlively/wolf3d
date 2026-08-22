@@ -619,7 +619,7 @@ void CheckKeys (void)
 	unsigned	temp;
 
 
-	if (screenfaded || demoplayback)	// don't do anything with a faded screen
+	if (R_IsScreenFadedOut() || demoplayback)	// don't do anything with a faded screen
 		return;
 
 	scan = LastScan;
@@ -1264,7 +1264,7 @@ void PlayLoop (void)
 		SD_Poll ();
 		UpdateSoundLoc();	// JAB
 
-		if (screenfaded)
+		if (R_IsScreenFadedOut())
 			VW_FadeIn ();
 
 		CheckKeys();

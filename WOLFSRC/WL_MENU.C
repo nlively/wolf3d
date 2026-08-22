@@ -412,7 +412,7 @@ void US_ControlPanel(byte scancode)
 
 			R_DrawPic(0,80,IDGUYS2PIC);
 
-			VL_FadeIn(0,255,AM_GetGraphicsAsset(IDGUYSPALETTE),30);
+			VL_FadeIn(0,255,30);
 
 			while (Keyboard[sc_I] || Keyboard[sc_D]);
 			IN_ClearKeysDown();
